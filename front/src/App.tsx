@@ -4,6 +4,7 @@ import Register from './components/Register';
 import NotFound from './components/NotFound';
 import { Toaster } from 'react-hot-toast';
 import Home from './components/Home';
+import Footer from './components/Footer';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,8 @@ function App() {
       <Toaster position="top-right" reverseOrder={false} />
 
       <RouterProvider router={router} />
+
+      <Footer />
     </>
   );
 }
