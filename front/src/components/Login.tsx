@@ -1,6 +1,7 @@
 import apiServices from '../services/apiServices';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -18,11 +19,16 @@ export default function Login() {
       });
 
       const user = await apiServices.me(token);
-      console.log(user);
+      if (user) {
+        toast.success('Logged in successfully!');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1200);
+      }
+      localStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
-      alert(error.message || 'An error occurred.');
+      toast.error('Login failed!');
     }
-    // return false; // Not necessary, preventing the default behavior is sufficient
   };
 
   const handleInputChange = event => {

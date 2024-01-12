@@ -1,11 +1,13 @@
 import apiServices from '../services/apiServices';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    display_name: '',
     confirmPassword: '',
   });
 
@@ -18,9 +20,12 @@ export default function Login() {
         display_name: formData.email,
         password: formData.password,
       });
-      console.log(newUser);
+      toast.success('Account created successfully!');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1400);
     } catch (error) {
-      alert(error.message || 'An error occurred.');
+      toast.error('Error creating account, please try again.');
     }
     // return false; // Not necessary, preventing the default behavior is sufficient
   };
@@ -64,6 +69,26 @@ export default function Login() {
                   autoComplete="email"
                   required
                   value={formData.email}
+                  onChange={handleInputChange}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="display_name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Display Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="display_name"
+                  name="display_name"
+                  type="text"
+                  required
+                  value={formData.display_name}
                   onChange={handleInputChange}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />

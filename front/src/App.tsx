@@ -2,11 +2,13 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import NotFound from './components/NotFound';
+import { Toaster } from 'react-hot-toast';
+import Home from './components/Home';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <div>Hello world!</div>,
+    element: <Home />,
     errorElement: <NotFound />,
   },
   {
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
+      <Toaster position="top-right" reverseOrder={false} />
+
       <RouterProvider router={router} />
     </>
   );
