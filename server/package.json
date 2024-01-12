@@ -2,19 +2,33 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "watch": "node server.js --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch": "node --watch server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "drizzle-kit generate:sqlite --out ./lib/migrations --breakpoints --schema=./lib/schema/realtime.js",
+    "migrate": "tsx lib/migrate",
+    "studio": "drizzle-kit studio --port 3333"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@libsql/client": "^0.4.0-pre.7",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "drizzle-orm": "^0.29.3",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "socket.io": "^4.7.3",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.20.10",
+    "tsx": "^4.7.0"
   }
 }

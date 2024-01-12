@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1704980395384,
+      "tag": "0000_futuristic_nomad",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1705007275666,
+      "tag": "0001_loving_azazel",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1705008027146,
+      "tag": "0002_perfect_doctor_octopus",
+      "breakpoints": true
+    }
+  ]
+}
