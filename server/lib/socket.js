@@ -1,48 +1,78 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 
-function createMessage(content, id) {
-    if (typeof content !== "string") {
-        throw new Error("Content must be a string");
-    }
+let io;
 
-    if (content.length === 0) {
-        throw new Error("Content cannot be empty");
-    }
+export async function initializeSocket(app) {
+  io = new Server(app, {
+    cors: {
+      origin: ["http://localhost:5173", "https://admin.socket.io"],
+      credentials: true,
+    },
+  });
+  instrument(io, {
+    auth: false,
+  });
 
-    return {
-        content,
-        userid: id,
-        id: uuidv4(),
-    };
+  io.on("connection", (socket) => {
+    //console.log("Client connected", socket.id);
+    socket.on("join-room", (roomKey) => {
+      console.log("join-room", roomKey, socket.id);
+    });
+    socket.on("disconnect", () => {
+      //console.log("Client disconnected", socket.id);
+    });
+  });
 }
 
+export function getIO() {
+  if (!io) {
+    throw new Error("Socket not initialized. Call initializeSocket first.");
+  }
+  return io;
+}
 
-export async function createSocket(app) {
-    let messages = [];
+export async function createOrJoinRoom(user, roomKey) {
+  const io = getIO();
+  const socket = io.sockets.sockets.get(user.socketId);
 
-    const io = new Server(app);
-    
+  if (!socket) {
+    console.log("Socket not found");
+    return;
+  }
+  console.log("createOrJoinRoom", user.socketId, roomKey, socket.id);
+  socket.join(roomKey);
 
-    io.on("connection", (socket) => {
-        socket.emit("messages", messages);
+  const message = {
+    display_name: user.display_name,
+    key: roomKey,
+  };
 
-        socket.on("message", (content, id) => {
-            console.log("Message received", content, id);
-            try {
-                const message = createMessage(content, id);
-                messages = [message, ...messages];
+  io.to(roomKey).emit("user-join", message);
 
-                io.sockets.emit("messages", messages);
+  return true;
+}
 
-                return {
-                    message: "success",
-                };
-            } catch (error) {
-                return {
-                    error: error.message || "Error occured when sending a message",
-                };
-            }
-        });
-    });
+export function LeaveRoom(user, roomKey) {
+  const socket = io.sockets.sockets.get(user.socket_id);
+  if (!socket) {
+    console.log(
+      `Socket Leave Room :: Unable to find socket with ID: ${user.socket_id}`
+    );
+    return false;
+  }
+  socket.leave(roomKey);
+
+  const message = {
+    display_name: user.display_name,
+    key: roomKey,
+  };
+
+  socket.to(roomKey).emit("user-leave", message);
+  return true;
+}
+export function disconnectSocket(socketID) {
+  if (!socketID) return;
+
+  io.in(socketID).disconnectSockets(true);
 }

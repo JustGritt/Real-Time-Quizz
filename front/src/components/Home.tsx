@@ -1,15 +1,97 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { List, X } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
+import socket from '../libs/socket';
+import { toast } from 'react-hot-toast';
+import apiServices from '../services/apiServices';
+import { useNavigate } from 'react-router-dom';
 
 const navigation = [
   { name: 'Become a QuizZer', href: '/register' },
   { name: 'About', href: '/about' },
 ];
 
-export default function Example() {
+export default function Home() {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isUserLogIn, setisUserLogIn] = useState(false);
+  const [user, setUser] = useState({});
+  const [roomKey, setRoomKey] = useState('');
+
+  useEffect(() => {
+    const checkUserLogin = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user && user.id) {
+          setisUserLogIn(true);
+          setUser(user);
+        }
+      } catch (error) {
+        toast.error('Login failed!');
+      }
+    };
+
+    checkUserLogin();
+  }, []);
+
+  const handleLogout = async (event: any) => {
+    event.preventDefault();
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      await apiServices.disconnectSession(user);
+      localStorage.removeItem('user');
+      setisUserLogIn(false);
+      toast.success('Logout successfully!');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 400);
+    } catch (error) {
+      toast.error('Logout failed!');
+    }
+  };
+
+  const handleCreateRoom = async (event: any) => {
+    event.preventDefault();
+    try {
+      console.log(socket.id);
+      const myUser = { ...user, socketId: socket.id };
+      localStorage.setItem(
+        'user',
+        JSON.stringify({ ...user, socketId: socket.id }),
+      );
+      const sessionData = await apiServices.createSession({
+        host: user.id,
+        user: myUser,
+        title: 'Test',
+      });
+      const roomKey = sessionData.session.roomKey;
+
+      toast.success(`Create room successfully! ${roomKey}`);
+      setTimeout(() => {
+        navigate(`/game/${roomKey}`);
+      }, 400);
+    } catch (error) {
+      toast.error('Create room failed!');
+    }
+  };
+
+  const handleJoinRoom = async (event: any) => {
+    event.preventDefault();
+    try {
+      const myUser = { ...user, socketId: socket.id };
+      const data = { user: myUser, roomKey };
+      console.log(data, 'from front');
+      const response = await apiServices.joinSession(data);
+      console.log(response);
+      toast.success('You have joined the room successfully!');
+      setTimeout(() => {
+        navigate(`/game/${roomKey}`);
+      }, 400);
+    } catch (error) {
+      toast.error('Logout failed!');
+    }
+  };
 
   return (
     <div className="bg-white">
@@ -50,12 +132,22 @@ export default function Example() {
             ))}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <Link
-              to="/login"
-              className="text-sm font-semibold leading-6 text-gray-900"
-            >
-              Log in <span aria-hidden="true">&rarr;</span>
-            </Link>
+            {isUserLogIn ? (
+              <button
+                className="text-sm font-semibold leading-6 text-gray-900"
+                onClick={handleLogout}
+                type="button"
+              >
+                Logout <span aria-hidden="true">&rarr;</span>
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="text-sm font-semibold leading-6 text-gray-900"
+              >
+                Log in <span aria-hidden="true">&rarr;</span>
+              </Link>
+            )}
           </div>
         </nav>
         <Dialog
@@ -98,12 +190,22 @@ export default function Example() {
                   ))}
                 </div>
                 <div className="py-6">
-                  <Link
-                    to="/login"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Log in
-                  </Link>
+                  {isUserLogIn ? (
+                    <button
+                      className="text-sm font-semibold leading-6 text-gray-900"
+                      onClick={handleLogout}
+                      type="button"
+                    >
+                      Logout <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Log in
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -134,7 +236,10 @@ export default function Example() {
               learn new things and test your knowledge.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <form className="flex items-center justify-center gap-x-6">
+              <form
+                className="flex items-center justify-center gap-x-6"
+                onSubmit={handleJoinRoom}
+              >
                 <label htmlFor="room" className="sr-only">
                   Room
                 </label>
@@ -143,6 +248,8 @@ export default function Example() {
                   name="room"
                   id="room"
                   required
+                  value={roomKey}
+                  onChange={e => setRoomKey(e.target.value)}
                   className="px-3.5 py-2.5 rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="Enter a room code"
                 />
@@ -152,6 +259,22 @@ export default function Example() {
                     className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm sm:leading-6"
                   >
                     Join a Quiz
+                  </button>
+                </div>
+              </form>
+              <form
+                className="flex items-center justify-center gap-x-6"
+                onSubmit={handleCreateRoom}
+              >
+                <label htmlFor="room" className="sr-only">
+                  Create a room
+                </label>
+                <div>
+                  <button
+                    type="submit"
+                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm sm:leading-6"
+                  >
+                    Create a Quiz
                   </button>
                 </div>
               </form>

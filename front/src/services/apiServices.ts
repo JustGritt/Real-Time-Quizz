@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'https://realtime-quiz.fly.dev/api',
+  baseURL: 'http://localhost:8080/api', //'https://realtime-quiz.fly.dev/api'
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,6 +25,7 @@ interface RegisterData {
 const login = async (data: LoginData) => {
   try {
     const response = await apiClient.post('/login', JSON.stringify(data));
+    console.log(response);
     return response.data; // Assuming you want to return the data property of the response
   } catch (error) {
     throw error;
@@ -49,4 +50,61 @@ const register = async (data: RegisterData) => {
     throw error;
   }
 };
-export default { login, me, register };
+
+//add interceptor to add token to header
+apiClient.interceptors.request.use(
+  config => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.accessToken) {
+      config.headers['Authorization'] = `Bearer ${user.accessToken}`;
+    }
+    return config;
+  },
+  error => Promise.reject(error),
+);
+
+const createSession = async (data: any) => {
+  try {
+    console.log(data);
+    const response = await apiClient.post('/session', JSON.stringify(data));
+    return response.data; // Assuming you want to return the data property of the response
+  } catch (error) {
+    throw error;
+  }
+};
+
+const disconnectSession = async (data: any) => {
+  try {
+    console.log(data);
+    const response = await apiClient.post(
+      '/session/disconnect',
+      JSON.stringify(data),
+    );
+    return response.data; // Assuming you want to return the data property of the response
+  } catch (error) {
+    throw error;
+  }
+};
+
+const joinSession = async (data: any) => {
+  try {
+    //i need to add the roomkey to the url as param, roomkey is in data.roomkey
+    console.log(data.roomKey);
+    const response = await apiClient.post(
+      `/session/join/${data.roomKey}`,
+      JSON.stringify(data),
+    );
+    return response.data; // Assuming you want to return the data property of the response
+  } catch (error) {
+    throw error;
+  }
+};
+
+export default {
+  login,
+  me,
+  register,
+  createSession,
+  joinSession,
+  disconnectSession,
+};

@@ -5,6 +5,9 @@ import NotFound from './components/NotFound';
 import { Toaster } from 'react-hot-toast';
 import Home from './components/Home';
 import Footer from './components/Footer';
+import Game from './components/Game';
+import { SocketProvider } from './contexts/socketContext';
+import { SessionProvider } from './contexts/sessionContext';
 
 const router = createBrowserRouter([
   {
@@ -20,15 +23,25 @@ const router = createBrowserRouter([
     path: '/register',
     element: <Register />,
   },
+  {
+    path: '/logout',
+    element: <NotFound />,
+  },
+  {
+    path: '/game/:roomKey',
+    element: <Game />,
+  },
 ]);
 
 function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-
-      <RouterProvider router={router} />
-
+      <SessionProvider>
+        <SocketProvider>
+          <RouterProvider router={router} />
+        </SocketProvider>
+      </SessionProvider>
       <Footer />
     </>
   );

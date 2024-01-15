@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { ChangeEvent, FormEvent, useState } from 'react';
 
+interface FormData {
+  email: string;
+  password: string;
+}
+
 export default function Login() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
   });
@@ -12,6 +17,7 @@ export default function Login() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     console.log(formData);
+
     try {
       const token = await apiServices.login({
         email: formData.email,
@@ -19,13 +25,17 @@ export default function Login() {
       });
 
       const user = await apiServices.me(token);
-      if (user) {
+      const accessToken = token.accessToken;
+      const myuser = { ...user, accessToken };
+
+      if (myuser) {
         toast.success('Logged in successfully!');
         setTimeout(() => {
           window.location.href = '/';
-        }, 1200);
+        }, 600);
       }
-      localStorage.setItem('user', JSON.stringify(user));
+
+      localStorage.setItem('user', JSON.stringify(myuser));
     } catch (error) {
       toast.error('Login failed!');
     }
@@ -33,10 +43,10 @@ export default function Login() {
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormData({
-      ...formData,
+    setFormData(prevFormData => ({
+      ...prevFormData,
       [name]: value,
-    });
+    }));
   };
 
   return (
@@ -44,7 +54,7 @@ export default function Login() {
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="relative isolate px-6 pt-14 lg:px-8">
           <div
-            className="absolute inset-x-0 -top-44 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-96"
+            className="absolute inset-x-0 -top-44 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-[28rem]"
             aria-hidden="true"
           >
             <div
