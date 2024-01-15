@@ -1,27 +1,38 @@
-import { createContext, useEffect, useContext } from 'react';
+import { createContext, useEffect, useContext, ReactNode, useState } from 'react';
 import axios from 'axios';
 import socket from '../libs/socket';
 import { SessionContext } from './sessionContext';
+import HomeSkeleton from '../components/AppSkeleton';
+
+interface SocketProviderProps {
+  children: ReactNode;
+}
 
 interface UserData {
   id: string;
-  accessToken: string;
-  socketId: string;
+  socketId?: string;
+  accessToken?: string;
+  email: string;
+  display_name: string;
 }
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
-export const SocketContext = createContext(null);
+export const SocketContext =  createContext<UserData | null>(null);
 
-export const SocketProvider = ({ children }: any) => {
+export const SocketProvider = ({ children }: SocketProviderProps) => {
   const { GetConnectedUsers } = useContext(SessionContext);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const TryConnect = () => {
-      console.log(`Attempting to connect...`);
       const storedUserData = JSON.parse(localStorage.getItem('user') || '{}');
       if (storedUserData.id) {
         Setup(storedUserData);
+      } else {
+        console.log('No stored user data found.');
+        setLoading(false);
       }
     };
 
@@ -29,51 +40,44 @@ export const SocketProvider = ({ children }: any) => {
       if (!socket) return;
 
       socket.on('connect', () => {
-        setTimeout(() => {
-          axios.defaults.headers.common['Authorization'] =
-            `Bearer ${storedUserData.accessToken}`;
-          axios
-            .post(`${API_URL}/users/usersocketid`, {
-              userId: storedUserData.id,
-              socket_id: socket.id,
-            })
-            .then(res => {
-              console.log(res.data);
-              if (res.data) {
-                //update the localstorage with the new socket id
-                localStorage.setItem(
-                  'user',
-                  JSON.stringify({ ...storedUserData, socketId: socket.id }),
-                );
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedUserData.accessToken}`;
 
-                console.log('Successfully updated the socketid.');
-              } else {
-                console.log('Failed To Connect.');
-                socket.disconnect(); // Disconnect the socket if the connection fails
-              }
-            })
-            .catch(e => {
-              console.log(e);
-            });
-        }, 100);
+        axios.post(`${API_URL}/users/usersocketid`, {
+          userId: storedUserData.id,
+          socket_id: socket.id,
+        })
+        .then(res => {
+          console.log(res.data, 'res.data');
+          if (res.data) {
+            setUser({ ...res.data[0], accessToken: storedUserData.accessToken });
+            localStorage.setItem('user', JSON.stringify({ ...res.data[0], accessToken: storedUserData.accessToken }));
+            console.log('Successfully updated the socketid.');
+          } else {
+            console.log('Failed To Connect.');
+            socket.disconnect();
+          }
+        })
+        .catch(e => {
+          console.log(e);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+
       });
 
       socket.on('close', () => {
         console.log('Socket Connection Terminated.');
-        socket.disconnect(); // Disconnect the socket on close
+        socket.disconnect();
       });
 
       socket.on('user-join', (res: any) => {
-        //console.log(`${JSON.stringify(res)} joined your game.`);
-        // Notify(`${res.name} joined your game.`, 3000);
-
-        console.log(res, 'res.key');
+        console.log(`${res.name} joined your game.`);
         GetConnectedUsers(res.key);
       });
 
       socket.on('user-leave', res => {
         console.log(`${res.name} left your game.`);
-        // Notify(`${res.name} left your game.`, 3000);
         GetConnectedUsers(res.key);
       });
     };
@@ -81,8 +85,11 @@ export const SocketProvider = ({ children }: any) => {
     TryConnect();
   }, []); // No dependencies, runs once on mount
 
+  if (loading) {
+    return <HomeSkeleton />;
+  }
   return (
-    <SocketContext.Provider value={null as any}>
+    <SocketContext.Provider value={user}>
       {children}
     </SocketContext.Provider>
   );

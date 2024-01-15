@@ -4,6 +4,7 @@ import socket from '../libs/socket';
 import apiServices from '../services/apiServices';
 import { toast } from 'react-hot-toast';
 import { SessionContext } from '../contexts/sessionContext';
+import { SocketContext } from '../contexts/socketContext';
 
 interface Message {
   display_name: string;
@@ -14,15 +15,15 @@ export default function Game() {
   const { roomKey } = useParams();
   const [users, setUsers] = useState([]);
   const { activeSessionUsers } = useContext(SessionContext);
+  const user = useContext(SocketContext);
 
   const handleJoinRoom = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const myUser = { ...user, socketId: socket.id };
-      const data = { user: myUser, roomKey };
-      console.log(data, 'from front');
-      const response = await apiServices.joinSession(data);
-      console.log(response);
+      const response = await apiServices.joinSession({
+        user,
+        roomKey,
+      });
+      console.log(response, 'hot reload test');
       toast.success('You have joined the room successfully!');
     } catch (error) {
       toast.error('Logout failed!');
@@ -34,32 +35,14 @@ export default function Game() {
   useEffect(() => {
     const checkUserLogin = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user && user.id) {
-          setUsers([...users, user]);
-        } else {
-          navigate('/login');
-        }
+        handleJoinRoom();
+        console.log(user, 'from front');
       } catch (error) {
         toast.error('Login failed!');
       }
     };
-    // Setup the beforeunload event listener
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const confirmationMessage =
-        'Are you sure you want to leave? Your session will be terminated.';
-      event.returnValue = confirmationMessage; // Standard for most browsers
-      return confirmationMessage; // For some older browsers
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Cleanup function
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
     checkUserLogin();
-  }, [navigate, users, roomKey]);
+  }, [navigate, users, roomKey, user]);
 
   return (
     <div className="bg-white">

@@ -43,7 +43,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
     any[] | undefined
   >(); // Replace any with the actual type
 
-  const API_URL = 'http://localhost:8080/api';
+  const API_URL =  import.meta.env.VITE_API_BASE_URL + '/api';
 
   const storedUserData: UserData = JSON.parse(
     localStorage.getItem('user') || '{}',

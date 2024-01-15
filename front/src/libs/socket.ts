@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const URL = 'http://localhost:8080';
+const URL = import.meta.env.VITE_API_BASE_URL;
 
 const socket = io(URL);
 

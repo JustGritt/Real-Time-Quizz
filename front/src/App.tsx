@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import Game from './components/Game';
 import { SocketProvider } from './contexts/socketContext';
 import { SessionProvider } from './contexts/sessionContext';
+import HomeSkeleton  from "./components/AppSkeleton"
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: '/game/:roomKey',
     element: <Game />,
+  },
+  {
+    path: '/test',
+    element: <HomeSkeleton />
   },
 ]);
 

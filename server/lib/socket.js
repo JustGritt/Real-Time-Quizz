@@ -6,7 +6,7 @@ let io;
 export async function initializeSocket(app) {
   io = new Server(app, {
     cors: {
-      origin: ["http://localhost:5173", "https://admin.socket.io"],
+      origin: ["http://localhost:5173", "https://admin.socket.io", "https://potential-goggles-gr5xxqg6qgpcwp54-5173.app.github.dev"],
       credentials: true,
     },
   });

@@ -38,7 +38,7 @@ export const setUserSocketId = async (req, res) => {
       .update(schema.users)
       .set({ socketId: req.body.socket_id })
       .where(eq(schema.users.id, user.id))
-      .returning();
+      .returning({ id: schema.users.id, socketId: schema.users.socketId, display_name: schema.users.display_name, email: schema.users.email })
     res.status(200).json(updatedUser);
   } catch (error) {
     sendResponse(res, 400, "Bad Request: Unable to update the user.");
