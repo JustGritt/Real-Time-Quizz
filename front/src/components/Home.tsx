@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { List, X } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
-import socket from '../libs/socket';
 import { toast } from 'react-hot-toast';
 import apiServices from '../services/apiServices';
 import { useNavigate } from 'react-router-dom';
-
+import { SessionContext } from '../contexts/sessionContext';
 const navigation = [
   { name: 'Become a QuizZer', href: '/register' },
   { name: 'About', href: '/about' },
@@ -18,6 +17,7 @@ export default function Home() {
   const [isUserLogIn, setisUserLogIn] = useState(false);
   const [user, setUser] = useState({});
   const [roomKey, setRoomKey] = useState('');
+  const { CreateSession, activeSession } = useContext(SessionContext);
 
   useEffect(() => {
     const checkUserLogin = async () => {
@@ -51,8 +51,33 @@ export default function Home() {
     }
   };
 
+  const handleCreateRoomDummy = async (event: any) => {
+    event.preventDefault();
+
+    try {
+      await CreateSession('Your Session Title');
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast.error('Error creating room!');
+    }
+  };
+
+ useEffect(() => {
+    if (activeSession) {
+      // Once activeSession is available, trigger actions
+      console.log('Room key:', activeSession.roomKey);
+      toast.success(`Create room successfully! ${activeSession.roomKey}`);
+      setTimeout(() => {
+        navigate(`/game/${activeSession.roomKey}`);
+      }, 400);
+    }
+  }, [activeSession]);
+
+
   const handleCreateRoom = async (event: any) => {
     event.preventDefault();
+     //handleCreateRoomDummy(event);
+    /*
     try {
       console.log(socket.id);
       const myUser = { ...user, socketId: socket.id };
@@ -60,31 +85,37 @@ export default function Home() {
         'user',
         JSON.stringify({ ...user, socketId: socket.id }),
       );
+      */
+     /*
       const sessionData = await apiServices.createSession({
         host: user.id,
-        user: myUser,
+        user: user,
         title: 'Test',
       });
+      
       const roomKey = sessionData.session.roomKey;
-
-      toast.success(`Create room successfully! ${roomKey}`);
       setTimeout(() => {
         navigate(`/game/${roomKey}`);
       }, 400);
+      
+
     } catch (error) {
       toast.error('Create room failed!');
-    }
+    }*/
   };
+
 
   const handleJoinRoom = async (event: any) => {
     event.preventDefault();
     try {
+      /*
       const myUser = { ...user, socketId: socket.id };
       const data = { user: myUser, roomKey };
       console.log(data, 'from front');
       const response = await apiServices.joinSession(data);
       console.log(response);
       toast.success('You have joined the room successfully!');
+      */
       setTimeout(() => {
         navigate(`/game/${roomKey}`);
       }, 400);
@@ -264,7 +295,7 @@ export default function Home() {
               </form>
               <form
                 className="flex items-center justify-center gap-x-6"
-                onSubmit={handleCreateRoom}
+                onSubmit={handleCreateRoomDummy}
               >
                 <label htmlFor="room" className="sr-only">
                   Create a room

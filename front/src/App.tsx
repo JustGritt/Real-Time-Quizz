@@ -42,11 +42,11 @@ function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <SessionProvider>
-        <SocketProvider>
-          <RouterProvider router={router} />
-        </SocketProvider>
-      </SessionProvider>
+        <SessionProvider>
+          <SocketProvider>
+            <RouterProvider router={router} />
+          </SocketProvider>
+        </SessionProvider>
       <Footer />
     </>
   );

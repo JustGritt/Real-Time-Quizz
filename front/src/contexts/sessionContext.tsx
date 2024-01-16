@@ -1,14 +1,9 @@
-import { createContext, useState, ReactNode } from 'react';
+import { createContext, useState, ReactNode, useEffect} from 'react';
 import axios from 'axios';
 
-interface UserData {
-  id: string;
-  accessToken: string;
-  socketId: string;
-}
 
 interface Session {
-  key: string;
+  roomkey: string;
   // Add other session properties as needed
 }
 
@@ -29,12 +24,12 @@ interface SessionProviderProps {
   children: ReactNode;
 }
 
+
 export const SessionContext = createContext<SessionContextProps | any>(null);
 
-export const SessionProvider: React.FC<SessionProviderProps> = ({
-  children,
-}) => {
-  const [activeSession, setActiveSession] = useState<Session | undefined>();
+export const SessionProvider = ({ children }: SessionProviderProps) => {
+
+  const [activeSession, setActiveSession] = useState<Session>();
   const [activeSessionUsers, setActiveSessionUsers] = useState<any[]>([]); // Replace any with the actual type
   const [activeSessionHosted, setActiveSessionHosted] =
     useState<boolean>(false);
@@ -45,32 +40,34 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
 
   const API_URL =  import.meta.env.VITE_API_BASE_URL + '/api';
 
-  const storedUserData: UserData = JSON.parse(
-    localStorage.getItem('user') || '{}',
-  );
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  function CreateSession(title: string): void {
-    axios
-      .post(`${API_URL}/create`, {
-        userID: storedUserData.id,
-        title,
-      })
-      .then(res => {
-        if (res.data.success === true) {
-          setActiveSession(res.data.session);
-          setActiveSessionHosted(true);
-          console.log('Successfully created a new game.');
-        }
-      })
-      .catch(error => {
-        console.log(`Create Session Error :: ${error}`);
+  async function CreateSession(title: string) {
+    try {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
+      const response = await axios.post(`${API_URL}/session`, {
+        host: user.id,
+        user: user,
+        title: title,
       });
+
+      if (response.data && response.data.session) {
+        setActiveSession(response.data.session);
+        setActiveSessionHosted(true);
+        console.log('Successfully created a new game.');
+        return response.data.session.roomkey; // Return the session key
+      } else {
+        console.log('Failed to create session.');
+      }
+    } catch (error) {
+      console.log(`Create Session Error :: ${error}`);
+    }
   }
 
   function JoinSession(roomKey: string): void {
     axios
       .post(`${API_URL}/join`, {
-        userID: storedUserData.id,
+        userID: user.id,
         roomKey,
       })
       .then(res => {
@@ -88,8 +85,8 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
   function DeleteSession(sessionID: string): void {
     axios
       .post(`${API_URL}/delete`, {
-        userID: storedUserData.id,
-        authKey: storedUserData.accessToken, // Assuming accessToken is the correct property
+        userID: user.id,
+        authKey: user.accessToken, // Assuming accessToken is the correct property
         sessionID,
       })
       .then(res => {
@@ -107,8 +104,8 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
   function LeaveSession(sessionID: string): void {
     axios
       .post(`${API_URL}/leave`, {
-        userID: storedUserData.id,
-        authKey: storedUserData.accessToken, // Assuming accessToken is the correct property
+        userID: user.id,
+        authKey: user.accessToken, // Assuming accessToken is the correct property
         sessionID,
       })
       .then(res => {
@@ -125,8 +122,8 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
 
   function GetConnectedUsers(key: string): void {
     axios.defaults.headers.common['Authorization'] =
-      `Bearer ${storedUserData.accessToken}`;
-    console.log(storedUserData, 'get connected users');
+      `Bearer ${user.accessToken}`;
+    console.log(user, 'get connected users');
     axios
       .get(`${API_URL}/session/getusers/${key}`)
       .then(res => {
@@ -142,6 +139,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
         console.log(`Failed To Fetch User Sessions: ${err}`);
       });
   }
+  
 
   return (
     <SessionContext.Provider

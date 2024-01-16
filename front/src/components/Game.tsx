@@ -1,6 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import socket from '../libs/socket';
+import { useContext, useEffect, useState, useRef } from 'react';
+import { useNavigate, useParams, useLocation  } from 'react-router-dom';
 import apiServices from '../services/apiServices';
 import { toast } from 'react-hot-toast';
 import { SessionContext } from '../contexts/sessionContext';
@@ -10,15 +9,27 @@ interface Message {
   display_name: string;
   key: string;
 }
+
+
 export default function Game() {
   const navigate = useNavigate();
   const { roomKey } = useParams();
   const [users, setUsers] = useState([]);
-  const { activeSessionUsers } = useContext(SessionContext);
-  const user = useContext(SocketContext);
+  const { activeSessionUsers, activeSession } = useContext(SessionContext);
+  const { user, loading } = useContext(SocketContext);
+
+  const isMounted = useRef(true);
 
   const handleJoinRoom = async () => {
     try {
+      console.log(user, 'from front', activeSessionUsers);
+      // if user.id is already in the activeSessionUsers, don't join
+      activeSessionUsers.forEach(element => {
+        if (element.id === user.id) {
+          toast.error('You are already in the room!');
+          return;
+        }
+      });
       const response = await apiServices.joinSession({
         user,
         roomKey,
@@ -26,23 +37,37 @@ export default function Game() {
       console.log(response, 'hot reload test');
       toast.success('You have joined the room successfully!');
     } catch (error) {
-      toast.error('Logout failed!');
+      toast.error('Failed to join the room!');
     }
   };
-
-  const activeUser = activeSessionUsers;
 
   useEffect(() => {
     const checkUserLogin = async () => {
       try {
-        handleJoinRoom();
-        console.log(user, 'from front');
+        if (!user) {
+          // If user doesn't exist, navigate to login
+          navigate('/login');
+          return;
+        }
+
+        if (!loading && isMounted.current && user.id) {
+          // If user exists and component is mounted, join the room
+          handleJoinRoom();
+        }
       } catch (error) {
         toast.error('Login failed!');
       }
     };
+
     checkUserLogin();
-  }, [navigate, users, roomKey, user]);
+  }, [loading, navigate, roomKey, user]);
+
+  useEffect(() => {
+    return () => {
+      // Component unmounting
+      isMounted.current = false;
+    };
+  }, []);
 
   return (
     <div className="bg-white">
@@ -57,7 +82,7 @@ export default function Game() {
               Connected Users:
             </h2>
             <ul>
-              {activeUser.map((user: any) => (
+              {activeSessionUsers.map((user: any) => (
                 <li key={user.id}>{user.display_name}</li>
               ))}
             </ul>
@@ -67,3 +92,4 @@ export default function Game() {
     </div>
   );
 }
+

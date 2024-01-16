@@ -1,5 +1,4 @@
 import { createContext, useEffect, useContext, ReactNode, useState } from 'react';
-import axios from 'axios';
 import socket from '../libs/socket';
 import { SessionContext } from './sessionContext';
 import HomeSkeleton from '../components/AppSkeleton';
@@ -18,7 +17,7 @@ interface UserData {
 
 const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
-export const SocketContext =  createContext<UserData | null>(null);
+export const SocketContext =  createContext<{ user: UserData | null; loading: boolean }>({ user: null, loading: false });
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const { GetConnectedUsers } = useContext(SessionContext);
@@ -40,6 +39,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       if (!socket) return;
 
       socket.on('connect', () => {
+        /*
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedUserData.accessToken}`;
 
         axios.post(`${API_URL}/users/usersocketid`, {
@@ -63,6 +63,11 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
         .finally(() => {
           setLoading(false);
         });
+        */
+        console.log('Successfully updated the socketid.');
+        setUser({ ...storedUserData, socketId: socket.id });
+        localStorage.setItem('user', JSON.stringify({ ...storedUserData, socketId: socket.id }));
+        setLoading(false);
 
       });
 
@@ -85,12 +90,15 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     TryConnect();
   }, []); // No dependencies, runs once on mount
 
+  
   if (loading) {
     return <HomeSkeleton />;
   }
+
   return (
-    <SocketContext.Provider value={user}>
+    <SocketContext.Provider value={{  user, loading }}>
       {children}
     </SocketContext.Provider>
   );
 };
+
