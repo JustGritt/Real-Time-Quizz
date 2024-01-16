@@ -1,5 +1,6 @@
-import { createContext, useState, ReactNode, useEffect} from 'react';
+import { createContext, useState, ReactNode, useEffect, useContext} from 'react';
 import axios from 'axios';
+import { SocketContext } from './socketContext';
 
 
 interface Session {
@@ -64,14 +65,16 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     }
   }
 
-  function JoinSession(roomKey: string): void {
+  function JoinSession(roomKey: string, data): void {
+    console.log(data.socketId, 'join session session active debug');
+    axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
     axios
-      .post(`${API_URL}/join`, {
-        userID: user.id,
-        roomKey,
+      .post(`${API_URL}/session/join/${roomKey}`, {
+         user: data,
       })
       .then(res => {
-        if (res.data.success === true) {
+        console.log(res.data, 'join session session active debug');
+        if (res.data === true) {
           setActiveSession(res.data.session);
           setActiveSessionHosted(false);
           console.log('Successfully joined game.');
@@ -101,15 +104,17 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       });
   }
 
-  function LeaveSession(sessionID: string): void {
+  function LeaveSession(roomKey: string): void {
+    console.log(user, 'get connected users');
+    axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
     axios
-      .post(`${API_URL}/leave`, {
-        userID: user.id,
-        authKey: user.accessToken, // Assuming accessToken is the correct property
-        sessionID,
+      .post(`${API_URL}/session/leave`, {
+        user: user,
+        roomKey
       })
       .then(res => {
-        if (res.data.success === true) {
+        console.log(res.data);
+        if (res.data === true) {
           console.log('Successfully left game.');
         }
         setActiveSession(undefined);
@@ -123,12 +128,11 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   function GetConnectedUsers(key: string): void {
     axios.defaults.headers.common['Authorization'] =
       `Bearer ${user.accessToken}`;
-    console.log(user, 'get connected users');
     axios
       .get(`${API_URL}/session/getusers/${key}`)
       .then(res => {
         if (res.data) {
-          console.log(res.data.connectedUsers[0]);
+          console.log(res.data.connectedUsers[0], 'get connected users');
           setActiveSessionUsers(res.data.connectedUsers[0]);
           console.log(res.data);
         } else {

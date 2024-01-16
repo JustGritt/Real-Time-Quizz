@@ -19,6 +19,7 @@ export async function initializeSocket(app) {
     socket.on("join-room", (roomKey) => {
       console.log("join-room", roomKey, socket.id);
     });
+   
     socket.on("disconnect", () => {
       //console.log("Client disconnected", socket.id);
     });
@@ -53,11 +54,12 @@ export async function createOrJoinRoom(user, roomKey) {
   return true;
 }
 
-export function LeaveRoom(user, roomKey) {
-  const socket = io.sockets.sockets.get(user.socket_id);
+export function leaveRoom(user, roomKey) {
+  const io = getIO();
+  const socket = io.sockets.sockets.get(user.socketId);
   if (!socket) {
     console.log(
-      `Socket Leave Room :: Unable to find socket with ID: ${user.socket_id}`
+      `Socket Leave Room :: Unable to find socket with ID: ${user.socketId}`
     );
     return false;
   }
@@ -67,8 +69,8 @@ export function LeaveRoom(user, roomKey) {
     display_name: user.display_name,
     key: roomKey,
   };
-
-  socket.to(roomKey).emit("user-leave", message);
+  console.log("leaveRoom", user.socketId, roomKey, socket.id);
+  io.to(roomKey).emit("user-leave", message);
   return true;
 }
 export function disconnectSocket(socketID) {

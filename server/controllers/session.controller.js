@@ -2,7 +2,7 @@ import db from "../lib/database.js";
 import * as schema from "../lib/schema/realtime.js";
 import { eq, and } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import { createOrJoinRoom, disconnectSocket } from "../lib/socket.js";
+import { createOrJoinRoom, leaveRoom } from "../lib/socket.js";
 const sendResponse = (res, status, message) => {
   res.status(status).json({ message });
 };
@@ -52,63 +52,74 @@ export const createSession = async (req, res) => {
   }
 };
 
-export const disconnectSession = async (req, res) => {
+export const leaveSession = async (req, res) => {
   try {
-    disconnectSocket(req.body.socketId);
+    
+    const isLeave = leaveRoom(req.body.user, req.body.roomKey);
+    if (!isLeave) {
+      return sendResponse(res, 404, "Not Found: User not found.");
+    }
+    //find the sessions id
+    const session = await db
+      .select()
+      .from(schema.sessions)
+      .where(eq(schema.sessions.roomKey, req.body.roomKey))
+      .get();
+    console.log("session", session);
+
+    //remove user from connectedUsers
+    const connectedUser = await db
+      .select()
+      .from(schema.connectedUsers)
+      .where(
+        and(
+          eq(schema.connectedUsers.sessionId, session.id),
+          eq(schema.connectedUsers.userId, req.body.user.id)
+        )
+      )
+      .get();
+
+    if (!connectedUser) {
+      return sendResponse(res, 404, "Not Found: User not found.");
+    }
+
+    const removeConnectedUser = await db
+      .delete(schema.connectedUsers)
+      .where(
+        and(
+          eq(schema.connectedUsers.sessionId, connectedUser.sessionId),
+          eq(schema.connectedUsers.userId, connectedUser.userId)
+        )
+      )
+      .returning();
+    if (!removeConnectedUser) {
+      return sendResponse(res, 404, "Not Found: User not found.");
+    }
+
+    //check if the session has any connectedUsers
+    const connectedUsers = await db
+      .select()
+      .from(schema.connectedUsers)
+      .where(eq(schema.connectedUsers.sessionId, session.id))
+      .get();
+    console.log("connectedUsers FROM leavesession", connectedUsers);
+    if (!connectedUsers) {
+      //remove session
+      const removeSession = await db
+        .delete(schema.sessions)
+        .where(eq(schema.sessions.id, session.id))
+        .returning();
+      console.log("removeSession", removeSession);
+      if (!removeSession) {
+        return sendResponse(res, 404, "Not Found: User not found.");
+      }
+    }
     res.status(200).json({ message: "success" });
   } catch (error) {
     sendResponse(res, 400, "Bad Request: Unable to disconnect a session.");
   }
 };
 
-/*
-export const joinSession = async (req, res) => {
-  try {
-    const session = await db
-      .select()
-      .from(schema.sessions)
-      .where(eq(schema.sessions.roomKey, req.params.roomKey))
-      .get();
-    const user = req.body.user;
-    try {
-      createOrJoinRoom(user, session.roomKey);
-    } catch (error) {
-      console.log(error);
-    }
-    //get the connected users
-    const connectedUsers = await db
-      .select()
-      .from(schema.connectedUsers)
-      .where(eq(schema.connectedUsers.sessionId, session.id));
-
-    connectedUsers.forEach((element) => {
-      if (element.userId === user.id) {
-        return res.status(200).json({ message: "success" });
-      }
-    });
-
-    const connectedUsersData = {
-      userId: user.id,
-      sessionId: session.id,
-      isHost: 0,
-      display_name: user.display_name,
-    };
-    const addconnectedUsers = await db
-      .insert(schema.connectedUsers)
-      .values({
-        ...connectedUsersData,
-      })
-      .returning();
-    console.log("Connected users created", addconnectedUsers);
-    if (!connectedUsers) {
-      return sendResponse(res, 404, "Not Found: User not found.");
-    }
-    res.status(200).json({ message: "success" });
-  } catch (error) {
-    sendResponse(res, 400, "Bad Request: Unable to join a session.");
-  }
-};
-*/
 export const joinSession = async (req, res) => {
   try {
     // Retrieve the session using the roomKey from the request params
@@ -123,6 +134,7 @@ export const joinSession = async (req, res) => {
     }
 
     const user = req.body.user;
+    console.log("user", user);
     try {
       createOrJoinRoom(user, session.roomKey);
     } catch (error) {
@@ -141,7 +153,7 @@ export const joinSession = async (req, res) => {
       )
       .get();
 
-    if (isUserAlreadyConnected !== undefined) {
+    if (isUserAlreadyConnected) {
       return sendResponse(res, 200, { message: "success" });
     }
     // If not connected, add the user to connectedUsers
