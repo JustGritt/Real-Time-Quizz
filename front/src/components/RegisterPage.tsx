@@ -1,9 +1,12 @@
 import apiServices from '../services/apiServices';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { UserContext } from '../contexts/userContext';
 
-export default function Login() {
+export default function RegisterPage() {
+  const { Register } = useContext(UserContext);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,20 +17,11 @@ export default function Login() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     console.log(formData);
-    try {
-      await apiServices.register({
-        email: formData.email,
-        display_name: formData.email,
-        password: formData.password,
-      });
-      toast.success('Account created successfully!');
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 1400);
-    } catch (error) {
-      toast.error('Error creating account, please try again.');
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match.');
+      return false;
     }
-    // return false; // Not necessary, preventing the default behavior is sufficient
+    Register(formData.email, formData.display_name, formData.password);
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {

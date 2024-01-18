@@ -154,7 +154,7 @@ export const joinSession = async (req, res) => {
       .get();
 
     if (isUserAlreadyConnected) {
-      return sendResponse(res, 200, { message: "success" });
+      return res.status(200).json({session: session});
     }
     // If not connected, add the user to connectedUsers
     const connectedUsersData = {
@@ -172,7 +172,7 @@ export const joinSession = async (req, res) => {
       return sendResponse(res, 404, "Not Found: User not found.");
     }
 
-    sendResponse(res, 200, { message: "success" });
+    return res.status(200).json({session: session[0]});
   } catch (error) {
     console.log(error);
     sendResponse(res, 400, "Bad Request: Unable to join a session.");

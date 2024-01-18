@@ -7,15 +7,13 @@ interface SocketProviderProps {
   children: ReactNode;
 }
 
-interface UserData {
-  id: string;
+export type UserData = {
+  id: number;
   socketId?: string;
   accessToken?: string;
   email: string;
   display_name: string;
 }
-
-const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 export const SocketContext =  createContext<{ user: UserData | null; loading: boolean }>({ user: null, loading: false });
 
@@ -77,12 +75,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       });
 
       socket.on('user-join', (res: any) => {
-        console.log(`${res.name} joined your game.`);
+        console.log(`${res.display_name} joined your game.`);
         GetConnectedUsers(res.key);
       });
 
       socket.on('user-leave', res => {
-        console.log(`${res.name} left your game.`);
+        console.log(`${res.display_name} left your game.`);
         GetConnectedUsers(res.key);
       });
     };

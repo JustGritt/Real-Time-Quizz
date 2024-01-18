@@ -1,74 +1,80 @@
 import { createContext, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import type { UserData } from './socketContext';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL + '/api'
-export const UserContext = createContext({} as any);
+
+interface UserContextProps {
+  loggedIn: boolean;
+  userData: UserData;
+  Login: (email: string, password: string) => void;
+  Logout: () => void;
+  Register: (email: string, display_name: string, password: string) => void;
+}
+
+export const UserContext = createContext({} as UserContextProps);
 
 export const UserProvider = ({ children }: any) => {
-  interface User {
-    id: number;
-    email: string;
-    display_name: string;
-    socketId: string;
-    accessToken?: string;
-    host?: string;
-    roomKey?: string;
-  }
 
-  const [userData, setUserData] = useState({} as any);
+  const [userData, setUserData] = useState({} as UserData);
   const [loggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   function Login(email: string, password: string) {
-    axios
-      .post(`${API_URL}/login`, { email, password })
-      .then(res => {
-        console.log(res.data);
-        if (res.data.auth === true) {
-          console.log(res.data);
-          setUserData(res.data.user);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
-          setLoggedIn(true);
-          toast.success('Logged in successfully!');
+    axios.post(`${API_URL}/login`, { email, password })
+      .then(loginResponse => {
+        const { data } = loginResponse;
+        if (data.auth === true) {
+          axios.defaults.headers['Authorization'] = `Bearer ${data.accessToken}`;
+          axios.get(`${API_URL}/me`)
+            .then(meResponse => {
+              const myuser = { ...meResponse.data, accessToken: data.accessToken };
+              setUserData(myuser);
+              localStorage.setItem('user', JSON.stringify(myuser));
+              setLoggedIn(true);
+              toast.success('Logged in successfully!');
+              setTimeout(() => {
+                navigate('/');
+              }, 600);
+            })
+            .catch(meError => {
+              console.error(`Me Error: ${meError}`);
+            });
         } else {
-          console.log(res.data.message);
+          console.log(data.message);
         }
       })
-      .catch(e => {
-        console.log(`Login Error: ${e}`);
+      .catch(loginError => {
+        console.error(`Login Error: ${loginError}`);
       });
   }
 
   function Logout() {
-    axios
-      .post(`${API_URL}/logout`, {
-        userID: userData.id,
-      })
-      .then(res => {
-        if (res.data.success === false) {
-          console.log(res.data.message);
-        }
-        setUserData({} as User);
-        setLoggedIn(false);
-      })
-      .catch(e => {
-        console.log(`Login Error: ${e}`);
-      });
+    setUserData({} as UserData);
+    setLoggedIn(false);
+    localStorage.removeItem('user');
+    toast.success('Logged out successfully!');
+    setTimeout(() => {
+      navigate('/');
+    }, 600);
   }
 
   function Register(email: string, display_name: string, password: string) {
     axios
       .post(`${API_URL}/register`, { email, display_name, password })
       .then(res => {
-        if (res.data.success === true) {
-          setUserData(res.data.user);
-          setLoggedIn(true);
-        } else {
-          console.log(res.data.message);
+        if (res.data) {
+          toast.success('Registered successfully!');
+          setTimeout(() => {
+            navigate('/');
+          }, 300);
         }
       })
       .catch(e => {
-        console.log(`Registration Error: ${e}`);
+        console.log(`Register Error: ${e}`);
+        toast.error('Error creating account, please try again.');
       });
   }
 

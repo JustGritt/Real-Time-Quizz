@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState, useRef } from 'react';
-import { useNavigate, useParams  } from 'react-router-dom';
-import apiServices from '../services/apiServices';
+import { useNavigate, useParams, useLocation  } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { SessionContext } from '../contexts/sessionContext';
 import { SocketContext } from '../contexts/socketContext';
@@ -15,43 +14,22 @@ export default function Game() {
   const navigate = useNavigate();
   const { roomKey } = useParams();
   const [users, setUsers] = useState([]);
-  const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession, GetConnectedUsers } = useContext(SessionContext);
+  const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession, activeSession } = useContext(SessionContext);
   const { user, loading } = useContext(SocketContext);
+  const location = useLocation();
+  const prevUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const [isFromCreateQuiz, setIsFromCreateQuiz] = useState(false);
+
 
   const isMounted = useRef(true);
   
   const handleLeaveRoom = async () => {
-    try {
-      LeaveSession(roomKey);
-      toast.success('You have left the room successfully!');
-      setTimeout(() => {
-        navigate('/');
-      } , 300);
-    } catch (error) {
-      toast.error('Failed to leave the room!');
-    }
+      LeaveSession(user, roomKey);
   }
 
-  const handleJoinRoom = async () => {
-    try {
-      /*
-      const response = await apiServices.joinSession({
-        user,
-        roomKey,
-      });
-      */
-      const response = JoinSession(roomKey, user);
-      console.log(response, 'hot reload test');
-      toast.success('You have joined the room successfully!');
-    } catch (error) {
-      toast.error('Oops this room does not exist!');
-      setTimeout(() => {
-        navigate('/');
-      }, 300);
-    }
-  };
 
   useEffect(() => {
+    console.log('game page', location.state);
     const checkUserLogin = async () => {
       console.log(user, 'user');
       try {
@@ -60,19 +38,17 @@ export default function Game() {
           navigate('/login');
           return;
         }
-
-        if (!loading && isMounted.current) {
-          // If user exists and component is mounted, join the room
-          console.log('user from game reload', user);
-          handleJoinRoom();
+        if(isMounted.current){
+            JoinSession(roomKey, user);
         }
       } catch (error) {
         toast.error('Login failed!');
       }
+      
     };
     checkUserLogin();
-    console.log('check user login', activeSessionUsers);
-  }, [loading, navigate, roomKey, user]);
+    console.log('check user login', activeSession);
+  }, [loading]);
 
   useEffect(() => {
     return () => {

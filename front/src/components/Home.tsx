@@ -3,12 +3,14 @@ import { Dialog } from '@headlessui/react';
 import { List, X } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import apiServices from '../services/apiServices';
 import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/sessionContext';
+import type { UserData } from '../contexts/socketContext';
+
+
 const navigation = [
   { name: 'Become a QuizZer', href: '/register' },
-  { name: 'About', href: '/about' },
+  { name: 'About', href: '/about'  },
 ];
 
 export default function Home() {
@@ -17,15 +19,15 @@ export default function Home() {
   const [isUserLogIn, setisUserLogIn] = useState(false);
   const [user, setUser] = useState({});
   const [roomKey, setRoomKey] = useState('');
-  const { CreateSession, activeSession } = useContext(SessionContext);
-
+  const { CreateSession, activeSession, LeaveSession } = useContext(SessionContext);
+  const myUser: UserData = JSON.parse(localStorage.getItem('user') || '{}');
+  
   useEffect(() => {
     const checkUserLogin = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user && user.id) {
+        if (myUser && myUser.id) {
           setisUserLogIn(true);
-          setUser(user);
+          setUser(myUser);
         }
       } catch (error) {
         toast.error('Login failed!');
@@ -38,84 +40,26 @@ export default function Home() {
   const handleLogout = async (event: any) => {
     event.preventDefault();
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      await apiServices.disconnectSession(user);
-      localStorage.removeItem('user');
+      if(activeSession) {
+        LeaveSession(myUser, activeSession.roomkey);
+      }
       setisUserLogIn(false);
-      toast.success('Logout successfully!');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 400);
-    } catch (error) {
+      localStorage.removeItem('user');
+      toast.success('Logout successful!');
+    }catch (error) {
       toast.error('Logout failed!');
     }
+   
   };
-
-  const handleCreateRoomDummy = async (event: any) => {
-    event.preventDefault();
-
-    try {
-      await CreateSession('Your Session Title');
-    } catch (error) {
-      console.error('Error creating session:', error);
-      toast.error('Error creating room!');
-    }
-  };
-
- useEffect(() => {
-    if (activeSession) {
-      // Once activeSession is available, trigger actions
-      console.log('Room key:', activeSession.roomKey);
-      toast.success(`Create room successfully! ${activeSession.roomKey}`);
-      setTimeout(() => {
-        navigate(`/game/${activeSession.roomKey}`);
-      }, 400);
-    }
-  }, [activeSession]);
-
 
   const handleCreateRoom = async (event: any) => {
     event.preventDefault();
-     //handleCreateRoomDummy(event);
-    /*
-    try {
-      console.log(socket.id);
-      const myUser = { ...user, socketId: socket.id };
-      localStorage.setItem(
-        'user',
-        JSON.stringify({ ...user, socketId: socket.id }),
-      );
-      */
-     /*
-      const sessionData = await apiServices.createSession({
-        host: user.id,
-        user: user,
-        title: 'Test',
-      });
-      
-      const roomKey = sessionData.session.roomKey;
-      setTimeout(() => {
-        navigate(`/game/${roomKey}`);
-      }, 400);
-      
-
-    } catch (error) {
-      toast.error('Create room failed!');
-    }*/
+    CreateSession('Your Session Title');
   };
-
 
   const handleJoinRoom = async (event: any) => {
     event.preventDefault();
     try {
-      /*
-      const myUser = { ...user, socketId: socket.id };
-      const data = { user: myUser, roomKey };
-      console.log(data, 'from front');
-      const response = await apiServices.joinSession(data);
-      console.log(response);
-      toast.success('You have joined the room successfully!');
-      */
       setTimeout(() => {
         navigate(`/game/${roomKey}`);
       }, 400);
@@ -153,14 +97,22 @@ export default function Home() {
           </div>
           <div className="hidden lg:flex lg:gap-x-12">
             {navigation.map(item => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="text-sm font-semibold leading-6 text-gray-900"
-              >
-                {item.name}
-              </Link>
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700"
+                >
+                  {item.name}
+                </Link>
             ))}
+            {myUser && myUser.id && (
+              <Link
+                to="/dashboard"
+                className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700"
+              >
+                Dashboard
+              </Link>
+                )}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             {isUserLogIn ? (
@@ -219,6 +171,14 @@ export default function Home() {
                       {item.name}
                     </Link>
                   ))}
+                   {myUser && myUser.id && (
+                    <Link
+                      to="/dashboard"
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Dashboard
+                    </Link>
+                    )}
                 </div>
                 <div className="py-6">
                   {isUserLogIn ? (
@@ -295,7 +255,7 @@ export default function Home() {
               </form>
               <form
                 className="flex items-center justify-center gap-x-6"
-                onSubmit={handleCreateRoomDummy}
+                onSubmit={handleCreateRoom}
               >
                 <label htmlFor="room" className="sr-only">
                   Create a room

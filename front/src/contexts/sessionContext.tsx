@@ -1,7 +1,8 @@
-import { createContext, useState, ReactNode, useEffect, useContext} from 'react';
+import { createContext, useState, ReactNode } from 'react';
 import axios from 'axios';
-import { SocketContext } from './socketContext';
-
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import type { UserData } from './socketContext';
 
 interface Session {
   roomkey: string;
@@ -42,6 +43,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   const API_URL =  import.meta.env.VITE_API_BASE_URL + '/api';
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const navigate = useNavigate();
 
   async function CreateSession(title: string) {
     try {
@@ -52,35 +54,49 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         title: title,
       });
 
-      if (response.data && response.data.session) {
+      if (response.data) {
+        console.log(response.data.session, 'create session session active debug');
         setActiveSession(response.data.session);
         setActiveSessionHosted(true);
         console.log('Successfully created a new game.');
-        return response.data.session.roomkey; // Return the session key
-      } else {
-        console.log('Failed to create session.');
+        toast.success('You have created a new game successfully!');
+        setTimeout(() => {
+          navigate(`/game/${response.data.session.roomKey}`)
+        }, 300);
+   
       }
     } catch (error) {
+      toast.error('Sorry, were unable to create a new game. Please try again.');
+      setTimeout(() => {
+        navigate('/');
+      }, 300);
       console.log(`Create Session Error :: ${error}`);
-    }
+    } 
   }
 
-  function JoinSession(roomKey: string, data): void {
-    console.log(data.socketId, 'join session session active debug');
+  function JoinSession(roomKey: string, data: UserData): void {
     axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
     axios
       .post(`${API_URL}/session/join/${roomKey}`, {
          user: data,
       })
       .then(res => {
-        console.log(res.data, 'join session session active debug');
-        if (res.data === true) {
+        console.log(res.data.session, 'join session session active debug');
+        if (res.data) {
           setActiveSession(res.data.session);
-          setActiveSessionHosted(false);
-          console.log('Successfully joined game.');
+          if (res.data.session.host === user.id) {
+            setActiveSessionHosted(true);
+          }else {
+            setActiveSessionHosted(false);
+          }
+          toast.success('You have joined the room successfully!');
         }
       })
       .catch(error => {
+        toast.error('Sorry, were unable to join the game. Please try again.');
+        setTimeout(() => {
+          navigate('/');
+        }, 300);
         console.log(`Join Session Error :: ${error}`);
       });
   }
@@ -104,24 +120,29 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       });
   }
 
-  function LeaveSession(roomKey: string): void {
+  function LeaveSession(user: UserData, roomKey: string): void {
     console.log(user, 'get connected users');
     axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
     axios
       .post(`${API_URL}/session/leave`, {
-        user: user,
+        user,
         roomKey
       })
       .then(res => {
         console.log(res.data);
-        if (res.data === true) {
+        if (res.data) {
           console.log('Successfully left game.');
+          toast.success('You have left the room successfully!');
+          setActiveSession(undefined);
+          setActiveSessionHosted(false);
+          setTimeout(() => {
+            navigate('/');
+          }, 300);
         }
-        setActiveSession(undefined);
-        setActiveSessionHosted(false);
       })
       .catch(error => {
         console.log(`Leave Session Error :: ${error}`);
+        toast.error('Failed to leave the room!. Please try again.');
       });
   }
 
