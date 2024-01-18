@@ -54,7 +54,6 @@ export const createSession = async (req, res) => {
 
 export const leaveSession = async (req, res) => {
   try {
-    
     const isLeave = leaveRoom(req.body.user, req.body.roomKey);
     if (!isLeave) {
       return sendResponse(res, 404, "Not Found: User not found.");
@@ -134,7 +133,6 @@ export const joinSession = async (req, res) => {
     }
 
     const user = req.body.user;
-    console.log("user", user);
     try {
       createOrJoinRoom(user, session.roomKey);
     } catch (error) {
@@ -154,7 +152,8 @@ export const joinSession = async (req, res) => {
       .get();
 
     if (isUserAlreadyConnected) {
-      return res.status(200).json({session: session});
+      console.log("isUserAlreadyConnected", session);
+      return res.status(200).json({ session: session });
     }
     // If not connected, add the user to connectedUsers
     const connectedUsersData = {
@@ -168,11 +167,12 @@ export const joinSession = async (req, res) => {
       .insert(schema.connectedUsers)
       .values(connectedUsersData)
       .returning();
+
     if (!addConnectedUser) {
       return sendResponse(res, 404, "Not Found: User not found.");
     }
-
-    return res.status(200).json({session: session[0]});
+    console.log("addConnectedUser debug sentance", session);
+    return res.status(200).json({ session: session });
   } catch (error) {
     console.log(error);
     sendResponse(res, 400, "Bad Request: Unable to join a session.");

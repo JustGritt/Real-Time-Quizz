@@ -26,11 +26,9 @@ interface SessionProviderProps {
   children: ReactNode;
 }
 
-
 export const SessionContext = createContext<SessionContextProps | any>(null);
 
 export const SessionProvider = ({ children }: SessionProviderProps) => {
-
   const [activeSession, setActiveSession] = useState<Session>();
   const [activeSessionUsers, setActiveSessionUsers] = useState<any[]>([]); // Replace any with the actual type
   const [activeSessionHosted, setActiveSessionHosted] =
@@ -40,14 +38,15 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     any[] | undefined
   >(); // Replace any with the actual type
 
-  const API_URL =  import.meta.env.VITE_API_BASE_URL + '/api';
+  const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const navigate = useNavigate();
 
   async function CreateSession(title: string) {
     try {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
+      axios.defaults.headers.common['Authorization'] =
+        `Bearer ${user.accessToken}`;
       const response = await axios.post(`${API_URL}/session`, {
         host: user.id,
         user: user,
@@ -55,15 +54,17 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       });
 
       if (response.data) {
-        console.log(response.data.session, 'create session session active debug');
+        console.log(
+          response.data.session,
+          'create session session active debug',
+        );
         setActiveSession(response.data.session);
         setActiveSessionHosted(true);
         console.log('Successfully created a new game.');
         toast.success('You have created a new game successfully!');
         setTimeout(() => {
-          navigate(`/game/${response.data.session.roomKey}`)
+          navigate(`/game/${response.data.session.roomKey}`);
         }, 300);
-   
       }
     } catch (error) {
       toast.error('Sorry, were unable to create a new game. Please try again.');
@@ -71,14 +72,15 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         navigate('/');
       }, 300);
       console.log(`Create Session Error :: ${error}`);
-    } 
+    }
   }
 
   async function JoinSession(roomKey: string, data: UserData): Promise<void> {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
+    axios.defaults.headers.common['Authorization'] =
+      `Bearer ${user.accessToken}`;
     axios
       .post(`${API_URL}/session/join/${roomKey}`, {
-         user: data,
+        user: data,
       })
       .then(res => {
         if (res.data && res.data.session) {
@@ -86,11 +88,11 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
           setActiveSession(res.data.session);
           if (res.data.session.host === user.id) {
             setActiveSessionHosted(true);
-          }else {
+          } else {
             setActiveSessionHosted(false);
           }
+          toast.success('You have joined the room successfully!');
         }
-        toast.success('You have joined the room successfully!');
       })
       .catch(error => {
         toast.error('Sorry, were unable to join the game. Please try again.');
@@ -120,13 +122,14 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       });
   }
 
-  async function LeaveSession(user: UserData, roomKey: string):  Promise<void> {
+  async function LeaveSession(user: UserData, roomKey: string): Promise<void> {
     console.log(user, 'get connected users');
-    axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
+    axios.defaults.headers.common['Authorization'] =
+      `Bearer ${user.accessToken}`;
     axios
       .post(`${API_URL}/session/leave`, {
         user,
-        roomKey
+        roomKey,
       })
       .then(res => {
         console.log(res.data);
@@ -164,7 +167,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         console.log(`Failed To Fetch User Sessions: ${err}`);
       });
   }
-  
 
   return (
     <SessionContext.Provider
