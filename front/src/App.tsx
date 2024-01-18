@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Login from './components/LoginPage';
 import Register from './components/RegisterPage';
 import NotFound from './components/NotFound';
@@ -9,38 +9,11 @@ import Game from './components/Game';
 import { SocketProvider } from './contexts/socketContext';
 import { SessionProvider } from './contexts/sessionContext';
 import { UserProvider } from './contexts/userContext';
-import HomeSkeleton  from "./components/AppSkeleton"
-import Dashboard from './components/Dashboard';
-
-/*
-const router = Routes([
-  {
-    path: '/',
-    element: <Home />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: '/login',
-    element: <Login />,
-  },
-  {
-    path: '/register',
-    element: <Register />,
-  },
-  {
-    path: '/logout',
-    element: <NotFound />,
-  },
-  {
-    path: '/game/:roomKey',
-    element: <Game />,
-  },
-  {
-    path: '/test',
-    element: <HomeSkeleton />
-  },
-]);
-*/
+import DashboardLayout from './pages/dashboard/DashboardLayout';
+import Profile from './components/Profile';
+import Quiz from './components/Quiz';
+import Dashboard from './pages/dashboard/Dashboard';
+import Example from './components/Dummy';
 
 function App() {
   return (
@@ -50,13 +23,17 @@ function App() {
           <SocketProvider>
             <UserProvider>
               <Routes>
-                <Route path="/" element={<Home />} errorElement={<NotFound />}/>
-                <Route path="/login" element={<Login />} errorElement={<NotFound />}/>
-                <Route path="/register" element={<Register />} errorElement={<NotFound />}/>
-                <Route path="/logout" element={<NotFound />} errorElement={<NotFound />}/>
-                <Route path="/game/:roomKey" element={<Game />} errorElement={<NotFound />}/>
-                <Route path="/test" element={<HomeSkeleton />} errorElement={<NotFound />}/>
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/" element={<Home />}/>
+                <Route path="/login" element={<Login />}/>
+                <Route path="/register" element={<Register />}/>
+                <Route path="/logout" element={<NotFound />}/>
+                <Route path="/game/:roomKey" element={<Game />}/>
+                <Route path="/test" element={<Example />}/>
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route path="" element={<Dashboard />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="quiz" element={<Quiz />} />
+                </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </UserProvider>

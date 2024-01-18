@@ -52,17 +52,12 @@ export default function Home() {
    
   };
 
-  const handleCreateRoom = async (event: any) => {
-    event.preventDefault();
-    CreateSession('Your Session Title');
-  };
-
   const handleJoinRoom = async (event: any) => {
     event.preventDefault();
     try {
       setTimeout(() => {
         navigate(`/game/${roomKey}`);
-      }, 400);
+      }, 600);
     } catch (error) {
       toast.error('Logout failed!');
     }
@@ -250,22 +245,6 @@ export default function Home() {
                     className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm sm:leading-6"
                   >
                     Join a Quiz
-                  </button>
-                </div>
-              </form>
-              <form
-                className="flex items-center justify-center gap-x-6"
-                onSubmit={handleCreateRoom}
-              >
-                <label htmlFor="room" className="sr-only">
-                  Create a room
-                </label>
-                <div>
-                  <button
-                    type="submit"
-                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm sm:leading-6"
-                  >
-                    Create a Quiz
                   </button>
                 </div>
               </form>

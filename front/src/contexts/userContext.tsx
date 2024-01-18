@@ -41,13 +41,13 @@ export const UserProvider = ({ children }: any) => {
             })
             .catch(meError => {
               console.error(`Me Error: ${meError}`);
+              toast.error('Error logging in, please try again.');
             });
-        } else {
-          console.log(data.message);
         }
       })
       .catch(loginError => {
         console.error(`Login Error: ${loginError}`);
+        toast.error('Error logging in, please try again.');
       });
   }
 

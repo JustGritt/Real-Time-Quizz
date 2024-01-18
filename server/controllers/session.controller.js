@@ -183,6 +183,7 @@ export const getSessionConnectedUsers = async (req, res) => {
   try {
     const roomKey = Object.values(req.params)[0];
     if (!roomKey) {
+      console.log("roomKey", roomKey);
       return sendResponse(res, 400, "Bad Request: Room key is required.");
     }
     const session = await db
@@ -206,6 +207,7 @@ export const getSessionConnectedUsers = async (req, res) => {
     console.log("Response getuser", response);
     res.status(200).json(response);
   } catch (error) {
+    console.log(error);
     sendResponse(res, 400, "Bad Request: Unable to join a session.");
   }
 };

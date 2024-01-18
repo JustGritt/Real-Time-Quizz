@@ -74,23 +74,23 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     } 
   }
 
-  function JoinSession(roomKey: string, data: UserData): void {
+  async function JoinSession(roomKey: string, data: UserData): Promise<void> {
     axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
     axios
       .post(`${API_URL}/session/join/${roomKey}`, {
          user: data,
       })
       .then(res => {
-        console.log(res.data.session, 'join session session active debug');
-        if (res.data) {
+        if (res.data && res.data.session) {
+          console.log(res, 'join session session active debug');
           setActiveSession(res.data.session);
           if (res.data.session.host === user.id) {
             setActiveSessionHosted(true);
           }else {
             setActiveSessionHosted(false);
           }
-          toast.success('You have joined the room successfully!');
         }
+        toast.success('You have joined the room successfully!');
       })
       .catch(error => {
         toast.error('Sorry, were unable to join the game. Please try again.');
@@ -120,7 +120,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       });
   }
 
-  function LeaveSession(user: UserData, roomKey: string): void {
+  async function LeaveSession(user: UserData, roomKey: string):  Promise<void> {
     console.log(user, 'get connected users');
     axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
     axios

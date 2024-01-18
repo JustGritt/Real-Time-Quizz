@@ -59,8 +59,7 @@ export default function Game() {
 
 
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-2xl py-32 sm:py-48">
+      <div className="mx-auto max-w-2xl py-32 sm:py-48 bg-white">
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
             Quiz Room: {roomKey}
@@ -81,13 +80,13 @@ export default function Game() {
             {activeSessionHosted ? (
                   <>
                     <button
-                      className="mt-4 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
+                      className="mt-6 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
                       onClick={ () => navigate(`/game/${roomKey}/play`) }
                     >
                       Start Game
                     </button>
                     <button
-                      className="mt-4 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
+                      className="mt-6 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
                       onClick={handleLeaveRoom}
                     >
                       Leave Room
@@ -106,7 +105,6 @@ export default function Game() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 

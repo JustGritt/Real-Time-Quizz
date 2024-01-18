@@ -1,26 +1,31 @@
 import { Fragment, useContext } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { List, Bell, X } from '@phosphor-icons/react';
-import type { UserData } from '../contexts/socketContext';
-import { UserContext } from '../contexts/userContext';
-
+import { List, X } from '@phosphor-icons/react';
+import type { UserData } from '../../contexts/socketContext';
+import { UserContext } from '../../contexts/userContext';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const navigation = [
-  { name: 'Dashboard', href: '#', current: true },
-  { name: 'Quiz', href: '#', current: false },
+  { name: 'Dashboard', href: '/dashboard', current: true },
+  { name: 'Quiz', href: '/dashboard/quiz', current: false },
 ]
 
 const userNavigation = [
-  { name: 'Your Profile', href: '#' },
-  { name: 'Sign out', href: '#' },
+  { name: 'Your Profile', href: '/dashboard/profile' },
 ]
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Dashboard() {
+export default function DashboardLayout(){
     const { Logout } = useContext(UserContext);
+    const location = useLocation();
+
+    const updatedNavigation = navigation.map((item) => ({
+      ...item,
+      current: item.href === location.pathname,
+    }));
 
     const handleLogout =  async (event: any) => {
         event.preventDefault();
@@ -32,16 +37,15 @@ export default function Dashboard() {
     if(user.id){
         initalLetter = user.display_name.charAt(0).toUpperCase() as string + user.display_name.charAt(1).toUpperCase() as string;
     }
+
+    const lastSegment = location.pathname.split('/').pop();
+    const capitalizedLastSegment = lastSegment
+      ? lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1)
+      : '';
+
+
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full">
-        <body class="h-full">
-        ```
-      */}
       <div className="min-h-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">
           {({ open }) => (
@@ -50,32 +54,30 @@ export default function Dashboard() {
                 <div className="flex h-16 justify-between">
                   <div className="flex">
                     <div className="flex flex-shrink-0 items-center">
-                      <img
-                        className="block h-8 w-auto lg:hidden"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                        alt="Your Company"
-                      />
-                      <img
-                        className="hidden h-8 w-auto lg:block"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                        alt="Your Company"
-                      />
+                      <Link to="/dashboard">
+                        <span className="sr-only">Workflow</span>
+                        <picture className="h-8 w-auto sm:h-10">
+                          <img
+                            className="block h-8 w-auto"
+                            src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                            alt="Your Company"
+                            srcSet='https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg, https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg 1x, https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg 2x'
+                          />
+                        </picture>
+                      </Link>
                     </div>
                     <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
-                      {navigation.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          className={classNames(
+                      {updatedNavigation.map((item) => (
+                        <Link key={item.name} to={item.href} className={classNames(
                             item.current
                               ? 'border-indigo-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
                             'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
                           )}
-                          aria-current={item.current ? 'page' : undefined}
-                        >
+                          aria-current={item.current ? 'location' : undefined}
+                          >
                           {item.name}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -103,20 +105,23 @@ export default function Dashboard() {
                         <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                           {userNavigation.map((item) => (
                             <Menu.Item key={item.name}>
-                              {({ active }) => (
-                                <a
-                                  href={item.href}
+                             {() => (
+                                <Link
+                                  to={item.href}
                                   className={classNames(
-                                    active ? 'bg-gray-100' : '',
+                                    location.pathname === item.href ? 'bg-gray-100' : '',
                                     'block px-4 py-2 text-sm text-gray-700'
                                   )}
-                                  onClick={handleLogout}
+                                  aria-current={location.pathname === item.href ? 'page' : undefined}
                                 >
                                   {item.name}
-                                </a>
+                                </Link>
                               )}
                             </Menu.Item>
                           ))}
+                          <a href="#" className="block px-4 py-2 text-sm text-gray-700" onClick={handleLogout}>
+                                  Logout
+                          </a>
                         </Menu.Items>
                       </Transition>
                     </Menu>
@@ -141,8 +146,8 @@ export default function Dashboard() {
                   {navigation.map((item) => (
                     <Disclosure.Button
                       key={item.name}
-                      as="a"
-                      href={item.href}
+                      as={Link}
+                      to={item.href}
                       className={classNames(
                         item.current
                           ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
@@ -171,9 +176,12 @@ export default function Dashboard() {
                     {userNavigation.map((item) => (
                       <Disclosure.Button
                         key={item.name}
-                        as="a"
-                        href={item.href}
-                        className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                        as={Link}
+                        to={item.href}
+                        className={classNames(
+                        'block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800',
+                        { 'bg-gray-100 text-gray-800': location.pathname === item.href }
+                      )}
                       >
                         {item.name}
                       </Disclosure.Button>
@@ -188,14 +196,14 @@ export default function Dashboard() {
         <div className="py-10">
           <header>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Dashboard</h1>
+              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                {capitalizedLastSegment}
+              </h1>
             </div>
           </header>
           <main>
             <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                {
-                    
-                }
+                    <Outlet />
             </div>
           </main>
         </div>
