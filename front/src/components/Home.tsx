@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/sessionContext';
 import type { UserData } from '../contexts/socketContext';
+import { SocketContext } from '../contexts/socketContext';
 
 
 const navigation = [
@@ -19,12 +20,14 @@ export default function Home() {
   const [isUserLogIn, setisUserLogIn] = useState(false);
   const [user, setUser] = useState({});
   const [roomKey, setRoomKey] = useState('');
-  const { CreateSession, activeSession, LeaveSession } = useContext(SessionContext);
+  const { activeSession, LeaveSession } = useContext(SessionContext);
   const myUser: UserData = JSON.parse(localStorage.getItem('user') || '{}');
+  const { loading } = useContext(SocketContext);
   
   useEffect(() => {
     const checkUserLogin = async () => {
       try {
+        console.log('loading', loading);
         if (myUser && myUser.id) {
           setisUserLogIn(true);
           setUser(myUser);
@@ -35,7 +38,7 @@ export default function Home() {
     };
 
     checkUserLogin();
-  }, []);
+  }, [loading]);
 
   const handleLogout = async (event: any) => {
     event.preventDefault();

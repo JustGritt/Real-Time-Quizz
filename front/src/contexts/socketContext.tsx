@@ -15,7 +15,7 @@ export type UserData = {
   display_name: string;
 }
 
-export const SocketContext =  createContext<{ user: UserData | null; loading: boolean }>({ user: null, loading: false });
+export const SocketContext =  createContext<{ user: UserData | null; loading: boolean }>({ user: null, loading: true });
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const { GetConnectedUsers } = useContext(SessionContext);
@@ -37,36 +37,10 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       if (!socket) return;
 
       socket.on('connect', () => {
-        /*
-        axios.defaults.headers.common['Authorization'] = `Bearer ${storedUserData.accessToken}`;
-
-        axios.post(`${API_URL}/users/usersocketid`, {
-          userId: storedUserData.id,
-          socket_id: socket.id,
-        })
-        .then(res => {
-          console.log(res.data, 'res.data');
-          if (res.data) {
-            setUser({ ...res.data[0], accessToken: storedUserData.accessToken });
-            localStorage.setItem('user', JSON.stringify({ ...res.data[0], accessToken: storedUserData.accessToken }));
-            console.log('Successfully updated the socketid.');
-          } else {
-            console.log('Failed To Connect.');
-            socket.disconnect();
-          }
-        })
-        .catch(e => {
-          console.log(e);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-        */
-        console.log('Successfully updated the socketid.');
+        console.log('Socket Connection Established.');
         setUser({ ...storedUserData, socketId: socket.id });
         localStorage.setItem('user', JSON.stringify({ ...storedUserData, socketId: socket.id }));
         setLoading(false);
-
       });
 
       socket.on('close', () => {
@@ -86,12 +60,14 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     };
 
     TryConnect();
+
   }, []); // No dependencies, runs once on mount
 
-  
+  /*
   if (loading) {
     return <HomeSkeleton />;
   }
+  */
 
   return (
     <SocketContext.Provider value={{  user, loading }}>

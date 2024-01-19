@@ -13,33 +13,28 @@ interface Message {
 export default function Game() {
   const navigate = useNavigate();
   const { roomKey } = useParams();
-  const [users, setUsers] = useState([]);
   const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession, activeSession } = useContext(SessionContext);
   const { user, loading } = useContext(SocketContext);
-  const location = useLocation();
-  const prevUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const [isFromCreateQuiz, setIsFromCreateQuiz] = useState(false);
+  const myUser = JSON.parse(localStorage.getItem('user') || '{}') 
 
-
-  const isMounted = useRef(true);
   
   const handleLeaveRoom = async () => {
-      LeaveSession(user, roomKey);
+      LeaveSession(myUser, roomKey);
   }
 
 
   useEffect(() => {
-    console.log('game page', location.state);
+    console.log('game page', loading);
     const checkUserLogin = async () => {
-      console.log(user, 'user');
       try {
-        if (!user) {
+        if (!myUser || !myUser.id) {
           // If user doesn't exist, navigate to login
           navigate('/login');
           return;
         }
-        if(isMounted.current){
-            JoinSession(roomKey, user);
+        if(!loading){
+          console.log('game page joining', loading);
+            JoinSession(roomKey, myUser);
         }
       } catch (error) {
         toast.error('Login failed!');
@@ -48,25 +43,20 @@ export default function Game() {
     };
     checkUserLogin();
     console.log('check user login', activeSession);
-  }, [loading]);
 
-  useEffect(() => {
-    return () => {
-      // Component unmounting
-      isMounted.current = false;
-    };
-  }, []);
+  }, [loading, navigate]);
 
 
   return (
-      <div className="mx-auto max-w-2xl py-32 sm:py-48 bg-white">
+    <div className="mx-auto max-w-2xl py-32 sm:py-48 bg-white">
+    {loading ? (
+      <div>Loading...</div>
+    ) : (
+      
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
             Quiz Room: {roomKey}
           </h1>
-          {/*if the user is the hostid show the start game option*/}
-        
-          {/* Add your game components here */}
           <div className="mt-8">
             <h2 className="text-2xl font-semibold text-gray-900">
               Connected Users:
@@ -104,7 +94,12 @@ export default function Game() {
           </div>
           </div>
         </div>
-      </div>
+    )}
+    </div>
   );
 }
+
+
+
+
 
