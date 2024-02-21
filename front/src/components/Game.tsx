@@ -3,56 +3,45 @@ import { useNavigate, useParams, useLocation  } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { SessionContext } from '../contexts/sessionContext';
 import { SocketContext } from '../contexts/socketContext';
-
-interface Message {
-  display_name: string;
-  key: string;
-}
+import Chat from './Chat';
 
 
 export default function Game() {
   const navigate = useNavigate();
   const { roomKey } = useParams();
-  const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession, activeSession } = useContext(SessionContext);
-  const { user, loading } = useContext(SocketContext);
+  const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession } = useContext(SessionContext);
+  const { user, loading, setchatMessages } = useContext(SocketContext);
   const myUser = JSON.parse(localStorage.getItem('user') || '{}') 
-
   
   const handleLeaveRoom = async () => {
       LeaveSession(myUser, roomKey);
+      setchatMessages([]);
   }
 
-
   useEffect(() => {
-    console.log('game page', loading);
     const checkUserLogin = async () => {
       try {
         if (!myUser || !myUser.id) {
-          // If user doesn't exist, navigate to login
           navigate('/login');
           return;
         }
         if(!loading){
           console.log('game page joining', loading);
-            JoinSession(roomKey, myUser);
+          JoinSession(roomKey, myUser);
         }
       } catch (error) {
         toast.error('Login failed!');
       }
-      
     };
     checkUserLogin();
-    console.log('check user login', activeSession);
-
-  }, [loading, navigate]);
-
+  }, [loading]);
 
   return (
     <div className="mx-auto max-w-2xl py-32 sm:py-48 bg-white">
     {loading ? (
       <div>Loading...</div>
     ) : (
-      
+        <>
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
             Quiz Room: {roomKey}
@@ -94,12 +83,13 @@ export default function Game() {
           </div>
           </div>
         </div>
+    
+        <Chat />
+        </>
     )}
     </div>
   );
 }
-
-
 
 
 

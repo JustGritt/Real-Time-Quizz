@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
 import { List, X } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -18,27 +18,23 @@ export default function Home() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isUserLogIn, setisUserLogIn] = useState(false);
-  const [user, setUser] = useState({});
   const [roomKey, setRoomKey] = useState('');
   const { activeSession, LeaveSession } = useContext(SessionContext);
   const myUser: UserData = JSON.parse(localStorage.getItem('user') || '{}');
-  const { loading } = useContext(SocketContext);
-  
+
   useEffect(() => {
     const checkUserLogin = async () => {
       try {
-        console.log('loading', loading);
         if (myUser && myUser.id) {
           setisUserLogIn(true);
-          setUser(myUser);
         }
       } catch (error) {
         toast.error('Login failed!');
       }
     };
-
     checkUserLogin();
-  }, [loading]);
+
+  }, []);
 
   const handleLogout = async (event: any) => {
     event.preventDefault();

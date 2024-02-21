@@ -23,6 +23,15 @@ export async function initializeSocket(app) {
     socket.on("disconnect", () => {
       //console.log("Client disconnected", socket.id);
     });
+
+    socket.on("game-chat", (res) => {
+      const message = {
+        display_name: res.name,
+        message: res.message,
+      };
+      console.log("game-chat", message);
+      io.to(res.roomKey).emit("game-chat", message);
+    });
   });
 }
 

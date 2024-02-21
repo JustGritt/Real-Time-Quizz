@@ -20,6 +20,7 @@ interface SessionContextProps {
   JoinSession: (roomKey: string) => void;
   LeaveSession: (sessionID: string) => void;
   GetConnectedUsers: (key: string) => void;
+  setActiveSession: (session: Session) => void;
 }
 
 interface SessionProviderProps {
@@ -176,6 +177,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         activeSessionHosted,
         hostedSessions,
         connectedSessions,
+        setActiveSession,
         CreateSession,
         DeleteSession,
         JoinSession,
