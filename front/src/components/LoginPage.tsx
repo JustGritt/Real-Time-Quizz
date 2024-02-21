@@ -1,10 +1,28 @@
-import apiServices from '../services/apiServices';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useContext, useEffect, useState } from 'react';
+import { UserContext } from '../contexts/userContext';
+import { useNavigate } from 'react-router-dom';
+import type { UserData } from '../contexts/socketContext';
 
-export default function Login() {
-  const [formData, setFormData] = useState({
+interface FormData {
+  email: string;
+  password: string;
+}
+
+export default function LoginPage() {
+  const { Login } = useContext(UserContext);
+  const navigate = useNavigate();
+  const userData: UserData  = JSON.parse(localStorage.getItem('user') || '{}');
+  
+  useEffect(() => {
+    console.log('LoginPage useEffect', userData);
+    if (userData.id) {
+      navigate('/');
+    }
+  } , []);
+
+
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
   });
@@ -12,31 +30,15 @@ export default function Login() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     console.log(formData);
-    try {
-      const token = await apiServices.login({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      const user = await apiServices.me(token);
-      if (user) {
-        toast.success('Logged in successfully!');
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1200);
-      }
-      localStorage.setItem('user', JSON.stringify(user));
-    } catch (error) {
-      toast.error('Login failed!');
-    }
+    Login(formData.email, formData.password);
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormData({
-      ...formData,
+    setFormData(prevFormData => ({
+      ...prevFormData,
       [name]: value,
-    });
+    }));
   };
 
   return (
@@ -44,7 +46,7 @@ export default function Login() {
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="relative isolate px-6 pt-14 lg:px-8">
           <div
-            className="absolute inset-x-0 -top-44 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-96"
+            className="absolute inset-x-0 -top-44 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-[28rem]"
             aria-hidden="true"
           >
             <div
