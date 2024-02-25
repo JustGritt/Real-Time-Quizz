@@ -61,6 +61,7 @@ export const questions = sqliteTable(
     quizId: int("quiz_id")
       .notNull()
       .references(() => quizzes.id),
+    timer: integer("timer").notNull(),
     question: text("question").notNull(),
     createdAt: integer("created_at").default(sql`(cast (unixepoch () as int))`),
     updatedAt: integer("updated_at").default(sql`(cast (unixepoch () as int))`),
@@ -86,7 +87,6 @@ export const answers = sqliteTable(
       .notNull()
       .references(() => questions.id),
     answer: text("answer").notNull(),
-    timer: integer("timer").notNull(),
     isCorrect: integer("is_correct").notNull(),
     createdAt: integer("created_at").default(sql`(cast (unixepoch () as int))`),
     updatedAt: integer("updated_at").default(sql`(cast (unixepoch () as int))`),

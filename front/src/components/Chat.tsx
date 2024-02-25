@@ -12,10 +12,18 @@ export default function Chat() {
 
   const toggleChat = () => {
     setChatActive(prev => !prev);
+    if (!isChatActive) {
+      sendMessage(`${myUser.display_name} has joined the chat.`, roomKey, {
+        display_name: 'System',
+      });
+    }
   };
 
   const closeChat = () => {
     setChatActive(false);
+    sendMessage(`${myUser.display_name} has left the chat.`, roomKey, {
+      display_name: 'System',
+    });
   };
 
   const handleSendMessage = () => {
@@ -112,16 +120,52 @@ export default function Chat() {
                   <li
                     id={`message-${index}`}
                     key={index}
-                    className="py-2 bg-white px-4 w-fit max-w-sm break-words"
+                    // If the display name is System, center the text and change the background color
+                    className={`py-2 px-4 w-fit max-w-sm break-words ${
+                      message.display_name === user?.display_name
+                        ? 'text-left rounded-md ml-auto mr-4 bg-[#6366f1] text-white'
+                        : 'bg-white'
+                    }`}
+                    // className="py-2 bg-white px-4 w-fit max-w-sm break-words"
                   >
-                    <strong>
+                    {/* If the display name is System, don't display the name */}
+                    {/* If the message is from the current user, display (You) next to the name in bold, else display the name in regular font */}
+                    {message.display_name === 'System' ? null : (
+                      <strong>
+                        {message.display_name === user?.display_name
+                          ? `${user?.display_name} (You)`
+                          : message.display_name}
+                        <span
+                          className={`ml-2 text-xs text-gray-500 font-light ${
+                            message.display_name === user?.display_name
+                              ? 'text-white'
+                              : ''
+                          }`}
+                        >
+                          {message.messageSentAt}
+                        </span>
+                      </strong>
+                    )}
+
+                    {/* {message.display_name === 'System' ? null : (
+                      <strong>
+                        {message.display_name === user?.display_name
+                          ? `${user?.display_name} (You)`
+                          : message.display_name}
+                        <span className="ml-2 text-xs text-gray-500 font-light">
+                          {message.messageSentAt}
+                        </span>
+                      </strong>
+                    )} */}
+
+                    {/* <strong>
                       {message.display_name === user?.display_name
                         ? `${user?.display_name} (You)`
                         : message.display_name}
                       <span className="ml-2 text-xs text-gray-500 font-light">
                         {message.messageSentAt}
                       </span>
-                    </strong>
+                    </strong> */}
                     <span className="block">{message.message}</span>
                   </li>
                 ))}
