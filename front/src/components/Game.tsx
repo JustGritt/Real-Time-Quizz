@@ -12,7 +12,7 @@ export default function Game() {
     useContext(SessionContext);
   const { user, loading, setchatMessages } = useContext(SocketContext);
   const myUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const hasJoinedRef = useRef(false)
+  const hasJoinedRef = useRef(false);
 
   const handleLeaveRoom = async () => {
     LeaveSession(myUser, roomKey);
@@ -29,7 +29,6 @@ export default function Game() {
         }
         if (!loading && !hasJoinedRef.current) {
           hasJoinedRef.current = true;
-          console.log('game page joining', loading);
           JoinSession(roomKey, myUser);
         }
       } catch (error) {
@@ -63,7 +62,7 @@ export default function Game() {
                   <>
                     <button
                       className="mt-6 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
-                      onClick={() => navigate(`/game/${roomKey}/play`)}
+                      onClick={() => navigate(`/game/${roomKey}/play/${}`)}
                     >
                       Start Game
                     </button>
