@@ -15,21 +15,34 @@ export default function Question() {
   const handleSubmitQuiz = async (event: FormEvent) => {
     event.preventDefault();
 
+    const quizName = document.getElementById('quizName') as HTMLInputElement;
     // Get the questions and answers of each question
     const questions = Array.from(
       document.querySelectorAll('section[data-question]'),
     );
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const data = Array.from(questions).map((question: any) => {
       const questionContent = question.querySelector('input')?.value;
+
       const answers = Array.from(
         question.querySelectorAll('input[data-answer]'),
-      ).map((answer: any) => answer.value);
+      ).map((answerInput: any) => {
+        const content = answerInput.value;
+        const isCorrect = answerInput.nextElementSibling.checked;
+        return { content, isCorrect };
+      });
+
       return { question: questionContent, answers };
     });
 
     // Send the data to the server (Create a a new quiz, then add the questions and answers)
-    const response = await axios.post(`${API_URL}/quiz/new`, data);
-    console.log(response.data);
+    const response = await axios.post(`${API_URL}/quiz/new`, {
+      name: quizName.value,
+      questions: data,
+      user: user,
+    });
+
+    console.log(response);
   };
 
   return (
@@ -49,6 +62,7 @@ export default function Question() {
               <sup className="text-red-500">*</sup>
             </label>
             <input
+              id="quizName"
               name="quizName"
               type="text"
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -71,6 +85,7 @@ export default function Question() {
             >
               Add new question
             </button>
+
             <button
               onClick={() => handleQuestionRow(questionCount - 1)}
               type="button"

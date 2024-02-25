@@ -1,30 +1,81 @@
 import db from "../lib/database.js";
 import * as schema from "../lib/schema/realtime.js";
 import { eq } from "drizzle-orm";
-import { quizzes, questions, answers } from "../lib/schema/realtime.js";
 
 const sendResponse = (res, status, message) => {
-    res.status(status).json({ message });
+  res.status(status).json({ message });
 };
+
+
+export const createQuizz = async (req, res) => {
+  try {
+
+    if (!req.body.name || !req.body.user || !req.body.questions) {
+      return sendResponse(res, 400, "Bad Request: Missing parameters.");
+    }
+
+    const quizz = {
+      authorId: req.body.user.id,
+      name: req.body.name,
+      description: ""
+    }
+
+    const createdQuizz = await db.insert(schema.quizzes).values(quizz).returning();
+
+    const bodyQuestions = req.body.questions ?? [];
+
+    let savedQuestions = [];
+
+    bodyQuestions.forEach(async element => {
+      if (!element.question || !element.answers) {
+        return sendResponse(res, 400, "Bad Request: Missing parameters.");
+      }
+      const createdQuestion = await db
+        .insert(schema.questions)
+        .values({
+          quizId: createdQuizz[0].id,
+          question: element.question,
+        })
+        .returning();
+
+      element.answers.forEach(async answer => {
+        const createdAnswer = await db
+          .insert(schema.answers)
+          .values({
+            questionId: createdQuestion[0].id,
+            answer: answer.content,
+            isCorrect: answer.isCorrect,
+          })
+          .returning();
+        savedQuestions.push(createdAnswer[0]);
+      });
+    });
+
+    sendResponse(res, 201, "Quizz created successfully.");
+  } catch (error) {
+    sendResponse(res, 400, "Bad Request: Unable to create the quizz.");
+  }
+};
+
 
 export async function getQuizzes()
 {
     try {
     const quizz = await db
-        .select()
-        .from(schema.quizzes)
-        .get();
+      .select()
+      .from(schema.quizzes)
+      .get();
     if (!quizz) {
-        return sendResponse(res, 404, "Not Found: Quiz not found.");
+      return sendResponse(res, 404, "Not Found: Quiz not found.");
     } else {
-        return quizz;
+      return quizz;
     }
 
-    } catch (error) {
-        sendResponse(res, 400, "Bad Request: Unable to retrieve the quiz.");
-    }
+  } catch (error) {
+    sendResponse(res, 400, "Bad Request: Unable to retrieve the quiz.");
+  }
 }
-
+  
 export async function getQuizById(req, res) {
     try {
         const quiz = await db
@@ -45,16 +96,16 @@ export async function getQuizById(req, res) {
 }
 
 export const createQuiz = async (req, res) => {
-    try {
-        const quiz = {
-            title: req.body.quizName,
-            description: req.body.description
-        };
-        console.log(quiz)
-        // await db.insert(schema.quizzes).values({ ...quiz });
-        sendResponse(res, 201, "Quiz created successfully.");
-    }
-    catch (error) {
-        sendResponse(res, 400, "Bad Request: Unable to create the quiz.");
-    }
+  try {
+    const quiz = {
+      title: req.body.quizName,
+      description: req.body.description
+    };
+    console.log(quiz)
+    // await db.insert(schema.quizzes).values({ ...quiz });
+    sendResponse(res, 201, "Quiz created successfully.");
+  }
+  catch (error) {
+    sendResponse(res, 400, "Bad Request: Unable to create the quiz.");
+  }
 }

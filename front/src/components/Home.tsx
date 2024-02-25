@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useRef } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { List, X } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -6,12 +6,10 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/sessionContext';
 import type { UserData } from '../contexts/socketContext';
-import { SocketContext } from '../contexts/socketContext';
-
 
 const navigation = [
   { name: 'Become a QuizZer', href: '/register' },
-  { name: 'About', href: '/about'  },
+  { name: 'About', href: '/about' },
 ];
 
 export default function Home() {
@@ -33,22 +31,20 @@ export default function Home() {
       }
     };
     checkUserLogin();
-
   }, []);
 
   const handleLogout = async (event: any) => {
     event.preventDefault();
     try {
-      if(activeSession) {
+      if (activeSession) {
         LeaveSession(myUser, activeSession.roomkey);
       }
       setisUserLogIn(false);
       localStorage.removeItem('user');
       toast.success('Logout successful!');
-    }catch (error) {
+    } catch (error) {
       toast.error('Logout failed!');
     }
-   
   };
 
   const handleJoinRoom = async (event: any) => {
@@ -91,13 +87,13 @@ export default function Home() {
           </div>
           <div className="hidden lg:flex lg:gap-x-12">
             {navigation.map(item => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700"
-                >
-                  {item.name}
-                </Link>
+              <Link
+                key={item.name}
+                to={item.href}
+                className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-700"
+              >
+                {item.name}
+              </Link>
             ))}
             {myUser && myUser.id && (
               <Link
@@ -106,7 +102,7 @@ export default function Home() {
               >
                 Dashboard
               </Link>
-                )}
+            )}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             {isUserLogIn ? (
@@ -165,14 +161,14 @@ export default function Home() {
                       {item.name}
                     </Link>
                   ))}
-                   {myUser && myUser.id && (
+                  {myUser && myUser.id && (
                     <Link
                       to="/dashboard"
                       className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                     >
                       Dashboard
                     </Link>
-                    )}
+                  )}
                 </div>
                 <div className="py-6">
                   {isUserLogIn ? (

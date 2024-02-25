@@ -59,10 +59,10 @@ export const questions = sqliteTable(
   {
     id: int("int").primaryKey({ autoIncrement: true }),
     quizId: int("quiz_id")
-      .notNull()
       .references(() => quizzes.id),
     timer: integer("timer").notNull(),
     question: text("question").notNull(),
+    timer: integer("timer").notNull().default(30),
     createdAt: integer("created_at").default(sql`(cast (unixepoch () as int))`),
     updatedAt: integer("updated_at").default(sql`(cast (unixepoch () as int))`),
   },
@@ -87,7 +87,7 @@ export const answers = sqliteTable(
       .notNull()
       .references(() => questions.id),
     answer: text("answer").notNull(),
-    isCorrect: integer("is_correct").notNull(),
+    isCorrect: integer("is_correct").notNull().default(0),
     createdAt: integer("created_at").default(sql`(cast (unixepoch () as int))`),
     updatedAt: integer("updated_at").default(sql`(cast (unixepoch () as int))`),
   },
