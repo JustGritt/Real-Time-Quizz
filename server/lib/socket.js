@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
-import { getQuestionAndAnswers } from "./serviceHelpers";
+import { getQuestionAndAnswers } from "./servicehelpers.js";
 let io;
 
 export async function initializeSocket(app) {

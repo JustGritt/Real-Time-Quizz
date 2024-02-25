@@ -37,7 +37,10 @@ function App() {
                 <Route path="quiz" element={<Quiz />} />
                 <Route path="questions" element={<Question />} />
               </Route>
-              <Route path="/game/:roomKey/play" element={<GameRoom />} />
+              <Route
+                path="/game/:roomKey/play/:quizId"
+                element={<GameRoom />}
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </UserProvider>

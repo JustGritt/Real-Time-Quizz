@@ -1,5 +1,5 @@
-import db from "../lib/database.js";
-import * as schema from "../lib/schema/realtime.js";
+import db from "./database.js";
+import * as schema from "./schema/realtime.js";
 
 export async function getQuizzes() {
     try {

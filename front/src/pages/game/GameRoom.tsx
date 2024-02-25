@@ -4,21 +4,18 @@ import { toast } from 'react-hot-toast';
 import { SessionContext } from '../../contexts/sessionContext';
 import { SocketContext } from '../../contexts/socketContext';
 import Chat from '../../components/Chat';
-import axios from 'axios';
 export default function GameRoom() {
   const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
   const navigate = useNavigate();
-  const { roomKey } = useParams();
-  const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession } =
-    useContext(SessionContext);
-  const { user, loading, setchatMessages } = useContext(SocketContext);
+  const { roomKey, quizId } = useParams();
+  const { JoinSession } = useContext(SessionContext);
+  const { loading, startGame } = useContext(SocketContext);
   const myUser = JSON.parse(localStorage.getItem('user') || '{}');
 
-  const handleLeaveRoom = async () => {
-    LeaveSession(myUser, roomKey);
-    setchatMessages([]);
-  };
+  useEffect(() => {
+    if (quizId) startGame(quizId);
+  }, [quizId]);
 
   useEffect(() => {
     const checkUserLogin = async () => {
