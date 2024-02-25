@@ -12,9 +12,11 @@ export default function Game() {
     useContext(SessionContext);
   const { user, loading, setchatMessages } = useContext(SocketContext);
   const myUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const hasJoinedRef = useRef(false)
 
   const handleLeaveRoom = async () => {
     LeaveSession(myUser, roomKey);
+    hasJoinedRef.current = false;
     setchatMessages([]);
   };
 
@@ -25,7 +27,8 @@ export default function Game() {
           navigate('/login');
           return;
         }
-        if (!loading) {
+        if (!loading && !hasJoinedRef.current) {
+          hasJoinedRef.current = true;
           console.log('game page joining', loading);
           JoinSession(roomKey, myUser);
         }
