@@ -13,7 +13,7 @@ import * as Sentry from "@sentry/node";
 const jsonParser = bodyParser.json();
 const app = express();
 const server = http.createServer(app);
-
+/*
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   integrations: [
@@ -32,9 +32,12 @@ Sentry.init({
   // for finer control
   tracesSampleRate: 1.0,
 });
+
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 app.use(Sentry.Handlers.errorHandler());
+*/
+
 app.use(jsonParser);
 app.use(cors());
 initializeSocket(server);
