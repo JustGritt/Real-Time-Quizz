@@ -9,21 +9,51 @@ const sendResponse = (res, status, message) => {
 
 export const createQuizz = async (req, res) => {
   try {
-    const quizz = {
-      name: req.body.name,
-      authorId: req.body.user
-    }
 
-    if (!quizz.name || !quizz.authorId) {
+    if (!req.body.name || !req.body.user || !req.body.questions) {
       return sendResponse(res, 400, "Bad Request: Missing parameters.");
     }
 
-    await db.insert(schema.questions).values({ ...req.body });
-    sendResponse(res, 201, "User created successfully.");
+    const quizz = {
+      authorId: req.body.user.id,
+      name: req.body.name,
+      description: ""
+    }
 
-    res.status(200).json(updatedUser);
+    const createdQuizz = await db.insert(schema.quizzes).values(quizz).returning();
+
+    const bodyQuestions = req.body.questions ?? [];
+
+    let savedQuestions = [];
+
+    bodyQuestions.forEach(async element => {
+      if (!element.question || !element.answers) {
+        return sendResponse(res, 400, "Bad Request: Missing parameters.");
+      }
+      const createdQuestion = await db
+        .insert(schema.questions)
+        .values({
+          quizId: createdQuizz[0].id,
+          question: element.question,
+        })
+        .returning();
+
+      element.answers.forEach(async answer => {
+        const createdAnswer = await db
+          .insert(schema.answers)
+          .values({
+            questionId: createdQuestion[0].id,
+            answer: answer.content,
+            isCorrect: answer.isCorrect,
+          })
+          .returning();
+        savedQuestions.push(createdAnswer[0]);
+      });
+    });
+
+    sendResponse(res, 201, "Quizz created successfully.");
   } catch (error) {
-    sendResponse(res, 400, "Bad Request: Unable to update the user.");
+    sendResponse(res, 400, "Bad Request: Unable to create the quizz.");
   }
 };
 
@@ -47,6 +77,9 @@ export async function getQuizzes() {
 
 export const createQuiz = async (req, res) => {
   try {
+    console.log('====================================');
+    console.log(req.body);
+    console.log('====================================');
     const quiz = {
       title: req.body.quizName,
       description: req.body.description

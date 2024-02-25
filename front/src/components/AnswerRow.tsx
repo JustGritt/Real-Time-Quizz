@@ -31,6 +31,14 @@ export default function AnswerRow({
         value={answerContent || ''}
         onChange={handleChange}
       />
+      <input type="checkbox" className="border border-gray-300" />
+      <div>
+        <span className="mr-4">Is correct</span>
+        <label
+          htmlFor={'answer-' + index + 1}
+          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        />
+      </div>
     </div>
   );
 }
