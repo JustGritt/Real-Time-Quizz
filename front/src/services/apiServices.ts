@@ -22,6 +22,13 @@ interface RegisterData {
   display_name: string;
 }
 
+interface quiz {
+  name: string,
+  description: string,
+  created_at: Date,
+  updated_at: Date,
+}
+
 const login = async (data: LoginData) => {
   try {
     const response = await apiClient.post('/login', JSON.stringify(data));
@@ -100,6 +107,16 @@ const joinSession = async (data: any) => {
   }
 };
 
+const getQuizzes = async () => {
+  try {
+    apiClient.defaults.headers['Authorization'] = `Bearer ${data.accessToken}`;
+    const response = await apiClient.get('/quizzes');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   login,
   me,
@@ -107,4 +124,5 @@ export default {
   createSession,
   joinSession,
   disconnectSession,
+  getQuizzes
 };

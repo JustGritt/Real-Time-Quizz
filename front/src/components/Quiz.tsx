@@ -1,11 +1,16 @@
-import { ChangeEvent, FormEvent, useState, useContext } from 'react';
+import { ChangeEvent, FormEvent, useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { SessionContext } from '../contexts/sessionContext';
 
 export default function Quiz() {
-  const { CreateSession } = useContext(SessionContext);
+  const { CreateSession, getQuizzes } = useContext(SessionContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getQuizzes()
+  }, [])
+
   const handleCreateRoom = async (event: Event) => {
     event.preventDefault();
     CreateSession('Your Session Title');
@@ -21,7 +26,7 @@ export default function Quiz() {
       <h1>Quiz</h1>
       <form
         className="flex items-center justify-center gap-x-6"
-        // onSubmit={handleCreateRoom}
+      // onSubmit={handleCreateRoom}
       >
         <label htmlFor="room" className="sr-only">
           Create a room to start a quiz
