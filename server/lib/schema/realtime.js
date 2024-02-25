@@ -59,7 +59,6 @@ export const questions = sqliteTable(
   {
     id: int("int").primaryKey({ autoIncrement: true }),
     quizId: int("quiz_id")
-      .notNull()
       .references(() => quizzes.id),
     question: text("question").notNull(),
     createdAt: integer("created_at").default(sql`(cast (unixepoch () as int))`),

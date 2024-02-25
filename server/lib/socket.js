@@ -6,7 +6,7 @@ let io;
 export async function initializeSocket(app) {
   io = new Server(app, {
     cors: {
-      origin: ["http://localhost:5173", "https://admin.socket.io", "https://potential-goggles-gr5xxqg6qgpcwp54-5173.app.github.dev"],
+      origin: ["http://localhost:5173", "https://admin.socket.io", "https://f0f9-109-18-183-6.ngrok-free.app", "https://potential-goggles-gr5xxqg6qgpcwp54-5173.app.github.dev"],
       credentials: true,
     },
   });
@@ -15,11 +15,10 @@ export async function initializeSocket(app) {
   });
 
   io.on("connection", (socket) => {
-    //console.log("Client connected", socket.id);
     socket.on("join-room", (roomKey) => {
       console.log("join-room", roomKey, socket.id);
     });
-   
+
     socket.on("disconnect", () => {
       //console.log("Client disconnected", socket.id);
     });
@@ -82,6 +81,8 @@ export function leaveRoom(user, roomKey) {
   io.to(roomKey).emit("user-leave", message);
   return true;
 }
+
+
 export function disconnectSocket(socketID) {
   if (!socketID) return;
 
