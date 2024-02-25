@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
+import quizzRoutes from "./routes/quizz.route.js";
 import sessionRoute from "./routes/session.route.js";
 import cors from "cors";
 import { initializeSocket } from "./lib/socket.js";
@@ -40,6 +41,7 @@ initializeSocket(server);
 //createSocket(server);
 authRoutes(app);
 userRoutes(app);
+quizzRoutes(app);
 sessionRoute(app);
 
 app.get("/", async (req, res) => {

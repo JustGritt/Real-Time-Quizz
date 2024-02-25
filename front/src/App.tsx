@@ -14,31 +14,35 @@ import Profile from './components/Profile';
 import Quiz from './components/Quiz';
 import Dashboard from './pages/dashboard/Dashboard';
 import Example from './components/Dummy';
+import GameRoomLayout from './pages/game/GameRoomLayout';
+import Question from './components/Question';
 
 function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-        <SessionProvider>
-          <SocketProvider>
-            <UserProvider>
-              <Routes>
-                <Route path="/" element={<Home />}/>
-                <Route path="/login" element={<Login />}/>
-                <Route path="/register" element={<Register />}/>
-                <Route path="/logout" element={<NotFound />}/>
-                <Route path="/game/:roomKey" element={<Game />}/>
-                <Route path="/test" element={<Example />}/>
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                  <Route path="" element={<Dashboard />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="quiz" element={<Quiz />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </UserProvider>
-          </SocketProvider>
-        </SessionProvider>
+      <SessionProvider>
+        <SocketProvider>
+          <UserProvider>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/logout" element={<NotFound />} />
+              <Route path="/game/:roomKey" element={<Game />} />
+              <Route path="/test" element={<Example />} />
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route path="" element={<Dashboard />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="quiz" element={<Quiz />} />
+                <Route path="questions" element={<Question />} />
+              </Route>
+              <Route path="/game/:roomKey/play" element={<GameRoomLayout />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </UserProvider>
+        </SocketProvider>
+      </SessionProvider>
       <Footer />
     </>
   );

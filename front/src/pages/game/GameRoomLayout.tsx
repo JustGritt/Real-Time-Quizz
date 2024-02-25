@@ -4,11 +4,13 @@ import { List, X } from '@phosphor-icons/react';
 import type { UserData } from '../../contexts/socketContext';
 import { UserContext } from '../../contexts/userContext';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import Game from '../../components/Game';
+
+console.log(Game);
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', current: true },
+  { name: 'Room', href: `/game/4F989A12/play`, current: true },
   { name: 'Quiz', href: '/dashboard/quiz', current: false },
-  { name: 'Questions', href: '/dashboard/questions', current: false },
 ];
 
 const userNavigation = [{ name: 'Your Profile', href: '/dashboard/profile' }];
