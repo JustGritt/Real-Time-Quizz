@@ -27,6 +27,7 @@ export async function initializeSocket(app) {
       const message = {
         display_name: res.name,
         message: res.message,
+        messageSentAt: new Date().toLocaleTimeString(),
       };
       console.log("game-chat", message);
       io.to(res.roomKey).emit("game-chat", message);
