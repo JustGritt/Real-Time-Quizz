@@ -23,7 +23,9 @@ export default function Quiz() {
 
   return (
     <div>
-      <h1>Quiz</h1>
+      <section className='md:w-[90%] w-full flex flex-col'>
+
+      </section>
       <form
         className="flex items-center justify-center gap-x-6"
       // onSubmit={handleCreateRoom}

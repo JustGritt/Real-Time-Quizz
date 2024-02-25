@@ -109,7 +109,6 @@ const joinSession = async (data: any) => {
 
 const getQuizzes = async () => {
   try {
-    apiClient.defaults.headers['Authorization'] = `Bearer ${data.accessToken}`;
     const response = await apiClient.get('/quizzes');
     return response.data;
   } catch (error) {

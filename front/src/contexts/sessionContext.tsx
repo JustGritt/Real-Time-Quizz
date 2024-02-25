@@ -22,7 +22,7 @@ interface SessionContextProps {
   LeaveSession: (sessionID: string) => void;
   GetConnectedUsers: (key: string) => void;
   setActiveSession: (session: Session) => void;
-  getQuizzes?: () => void;
+  getQuizzes: () => void;
 }
 
 interface SessionProviderProps {
@@ -197,17 +197,17 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   }
 
   function getQuizzes(): void {
-    console.log('hello')
     axios.defaults.headers.common['Authorization'] =
       `Bearer ${user.accessToken}`;
-    console.log('jwtToken')
     axios
       .get(`${API_URL}/quizzes`)
       .then(res => {
-        console.log(res.data);
+        if (res.data.success === true) {
+          console.log(`${res.data.message}`);
+        }
       })
-      .catch(err => {
-        console.log(`Failed To Fetch Quizzes: ${err}`);
+      .catch(error => {
+        console.log(`Error getting quizzes :: ${error}`);
       });
   }
 
