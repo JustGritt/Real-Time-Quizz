@@ -58,8 +58,9 @@ export const createQuizz = async (req, res) => {
 };
 
 
-export async function getQuizzes() {
-  try {
+export async function getQuizzes()
+{
+    try {
     const quizz = await db
       .select()
       .from(schema.quizzes)
@@ -74,12 +75,28 @@ export async function getQuizzes() {
     sendResponse(res, 400, "Bad Request: Unable to retrieve the quiz.");
   }
 }
+  
+export async function getQuizById(req, res) {
+    try {
+        const quiz = await db
+            .select()
+            .from(schema.quizzes)
+            .where(eq(schema.quizzes.id, req.params.id))
+            .get();
+        if (!quiz) {
+            console.log("Quiz not found.")
+            return sendResponse(res, 404, "Not Found: Quiz not found.");
+        } else {
+            console.log("Quiz found.", quiz)
+            return sendResponse(res, 200, "Quiz retrieved successfully.");
+        }
+    } catch (error) {
+        sendResponse(res, 400, "Bad Request: Unable to retrieve the quiz.");
+    }
+}
 
 export const createQuiz = async (req, res) => {
   try {
-    console.log('====================================');
-    console.log(req.body);
-    console.log('====================================');
     const quiz = {
       title: req.body.quizName,
       description: req.body.description

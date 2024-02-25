@@ -85,7 +85,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       })
       .then(res => {
         if (res.data && res.data.session) {
-          console.log(res, 'join session session active debug');
           setActiveSession(res.data.session);
           if (res.data.session.host === user.id) {
             setActiveSessionHosted(true);
@@ -124,7 +123,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   }
 
   async function LeaveSession(user: UserData, roomKey: string): Promise<void> {
-    console.log(user, 'get connected users');
     axios.defaults.headers.common['Authorization'] =
       `Bearer ${user.accessToken}`;
     axios

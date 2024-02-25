@@ -14,7 +14,7 @@ import Profile from './components/Profile';
 import Quiz from './components/Quiz';
 import Dashboard from './pages/dashboard/Dashboard';
 import Example from './components/Dummy';
-import GameRoomLayout from './pages/game/GameRoomLayout';
+import GameRoom from './pages/game/GameRoom';
 import Question from './components/Question';
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
                 <Route path="quiz" element={<Quiz />} />
                 <Route path="questions" element={<Question />} />
               </Route>
-              <Route path="/game/:roomKey/play" element={<GameRoomLayout />} />
+              <Route path="/game/:roomKey/play" element={<GameRoom />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </UserProvider>

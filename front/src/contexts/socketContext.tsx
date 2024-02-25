@@ -97,6 +97,10 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
           `[${res.messageSentAt}] ${res.display_name}: ${res.message}`,
         );
       });
+
+      socket.on('game-start', res => {
+        console.log('Game is starting now.');
+      });
     };
 
     TryConnect();
@@ -107,6 +111,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       socket.off('user-join');
       socket.off('user-leave');
       socket.off('game-chat');
+      socket.off('game-start');
     };
   }, []); // No dependencies, runs once on mount
 

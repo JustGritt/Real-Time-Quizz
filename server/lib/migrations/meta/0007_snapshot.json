@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "479156e1-10c6-4096-ad4b-5a646e6ca704",
+  "id": "45eac076-e2a7-4eec-aa12-556c96705fdf",
   "prevId": "d1c09bc8-5b33-4501-af74-205d8075607b",
   "tables": {
     "answers": {
@@ -24,13 +24,6 @@
         "answer": {
           "name": "answer",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "timer": {
-          "name": "timer",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -202,7 +195,14 @@
           "name": "quiz_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timer": {
+          "name": "timer",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
         "question": {
