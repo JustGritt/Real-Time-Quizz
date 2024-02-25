@@ -4,6 +4,7 @@ import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
 import quizzRoutes from "./routes/quizz.route.js";
 import sessionRoute from "./routes/session.route.js";
+import questionRoute from "./routes/question.route.js";
 import cors from "cors";
 import { initializeSocket } from "./lib/socket.js";
 import bodyParser from "body-parser";
@@ -46,6 +47,7 @@ authRoutes(app);
 userRoutes(app);
 quizzRoutes(app);
 sessionRoute(app);
+questionRoute(app);
 
 app.get("/", async (req, res) => {
   res.json({ message: "Welcome to the API" });

@@ -18,6 +18,7 @@ interface SessionContextProps {
   CreateSession: (title: string) => void;
   DeleteSession: (sessionID: string) => void;
   JoinSession: (roomKey: string) => void;
+  JoinGame: (quizId: string) => void;
   LeaveSession: (sessionID: string) => void;
   GetConnectedUsers: (key: string) => void;
   setActiveSession: (session: Session) => void;
@@ -86,7 +87,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       })
       .then(res => {
         if (res.data && res.data.session) {
-          console.log(res, 'join session session active debug');
           setActiveSession(res.data.session);
           if (res.data.session.host === user.id) {
             setActiveSessionHosted(true);
@@ -104,6 +104,33 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         console.log(`Join Session Error :: ${error}`);
       });
   }
+
+  // async function JoinGame(qu): Promise<void> {
+  //   axios.defaults.headers.common['Authorization'] =
+  //     `Bearer ${user.accessToken}`;
+  //   axios
+  //     .post(`${API_URL}/session/join/${roomKey}`, {
+  //       user: data,
+  //     })
+  //     .then(res => {
+  //       if (res.data && res.data.session) {
+  //         setActiveSession(res.data.session);
+  //         if (res.data.session.host === user.id) {
+  //           setActiveSessionHosted(true);
+  //         } else {
+  //           setActiveSessionHosted(false);
+  //         }
+  //         toast.success('You have joined the room successfully!');
+  //       }
+  //     })
+  //     .catch(error => {
+  //       toast.error('Sorry, were unable to join the game. Please try again.');
+  //       setTimeout(() => {
+  //         navigate('/');
+  //       }, 300);
+  //       console.log(`Join Session Error :: ${error}`);
+  //     });
+  // }
 
   function DeleteSession(sessionID: string): void {
     axios
@@ -125,7 +152,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   }
 
   async function LeaveSession(user: UserData, roomKey: string): Promise<void> {
-    console.log(user, 'get connected users');
     axios.defaults.headers.common['Authorization'] =
       `Bearer ${user.accessToken}`;
     axios

@@ -7,9 +7,7 @@ import {
 } from 'react';
 import socket from '../libs/socket';
 import { SessionContext } from './sessionContext';
-import HomeSkeleton from '../components/AppSkeleton';
 import toast from 'react-hot-toast';
-import { json } from 'react-router-dom';
 
 interface SocketProviderProps {
   children: ReactNode;
@@ -35,12 +33,14 @@ export const SocketContext = createContext<{
   chatMessages: Message[];
   sendMessage: any;
   setchatMessages: any;
+  startGame: (quizId: string) => void;
 }>({
   user: null,
   loading: true,
   chatMessages: [],
   sendMessage: null,
   setchatMessages: null,
+  startGame: () => {},
 });
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
@@ -97,6 +97,10 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
           `[${res.messageSentAt}] ${res.display_name}: ${res.message}`,
         );
       });
+
+      socket.on('game-start', res => {
+        console.log('Game is starting now.');
+      });
     };
 
     TryConnect();
@@ -107,6 +111,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       socket.off('user-join');
       socket.off('user-leave');
       socket.off('game-chat');
+      socket.off('game-start');
     };
   }, []); // No dependencies, runs once on mount
 
@@ -123,6 +128,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     }
   };
 
+  const startGame = (quizId: string) => {
+    if (socket) {
+      socket.emit('game-start', quizId);
+    }
+  };
+
   /*
   if (loading) {
     return <HomeSkeleton />;
@@ -131,7 +142,14 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 
   return (
     <SocketContext.Provider
-      value={{ user, loading, sendMessage, chatMessages, setchatMessages }}
+      value={{
+        user,
+        loading,
+        sendMessage,
+        chatMessages,
+        setchatMessages,
+        startGame,
+      }}
     >
       {children}
     </SocketContext.Provider>

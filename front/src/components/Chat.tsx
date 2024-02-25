@@ -2,7 +2,12 @@ import { useState, useContext, useEffect } from 'react';
 import { SocketContext } from '../contexts/socketContext';
 import { useParams } from 'react-router-dom';
 
-export default function Chat() {
+export default function Chat({
+  question,
+}: {
+  question: string;
+  answers: string[];
+}) {
   const [isChatActive, setChatActive] = useState(false);
   const { user, loading, sendMessage, chatMessages } =
     useContext(SocketContext);
@@ -27,10 +32,23 @@ export default function Chat() {
   };
 
   const handleSendMessage = () => {
+    const forbiddenWords = question.answers.map((answer: string) =>
+      answer.toLowerCase(),
+    );
+    if (
+      forbiddenWords.some((word: string) =>
+        message.toLowerCase().includes(word),
+      )
+    ) {
+      sendMessage('???', roomKey, myUser);
+      setMessage('');
+      return;
+    }
+
     if (message.trim() !== '') {
       setMessage(message);
       sendMessage(message, roomKey, myUser);
-      setMessage(''); // Clear the input field after sending the message
+      setMessage('');
     }
   };
 
@@ -120,16 +138,12 @@ export default function Chat() {
                   <li
                     id={`message-${index}`}
                     key={index}
-                    // If the display name is System, center the text and change the background color
                     className={`py-2 px-4 w-fit max-w-sm break-words ${
                       message.display_name === user?.display_name
                         ? 'text-left rounded-md ml-auto mr-4 bg-[#6366f1] text-white'
                         : 'bg-white'
                     }`}
-                    // className="py-2 bg-white px-4 w-fit max-w-sm break-words"
                   >
-                    {/* If the display name is System, don't display the name */}
-                    {/* If the message is from the current user, display (You) next to the name in bold, else display the name in regular font */}
                     {message.display_name === 'System' ? null : (
                       <strong>
                         {message.display_name === user?.display_name
@@ -146,26 +160,6 @@ export default function Chat() {
                         </span>
                       </strong>
                     )}
-
-                    {/* {message.display_name === 'System' ? null : (
-                      <strong>
-                        {message.display_name === user?.display_name
-                          ? `${user?.display_name} (You)`
-                          : message.display_name}
-                        <span className="ml-2 text-xs text-gray-500 font-light">
-                          {message.messageSentAt}
-                        </span>
-                      </strong>
-                    )} */}
-
-                    {/* <strong>
-                      {message.display_name === user?.display_name
-                        ? `${user?.display_name} (You)`
-                        : message.display_name}
-                      <span className="ml-2 text-xs text-gray-500 font-light">
-                        {message.messageSentAt}
-                      </span>
-                    </strong> */}
                     <span className="block">{message.message}</span>
                   </li>
                 ))}
@@ -178,6 +172,12 @@ export default function Chat() {
                   placeholder="Type a message..."
                   value={message}
                   onChange={e => setMessage(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); // Prevent form submission
+                      handleSendMessage();
+                    }
+                  }}
                 />
                 <button
                   id="chat-window-send"

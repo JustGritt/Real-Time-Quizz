@@ -1,12 +1,12 @@
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
-
+import { getQuestionAndAnswers } from "./servicehelpers.js";
 let io;
 
 export async function initializeSocket(app) {
   io = new Server(app, {
     cors: {
-      origin: ["http://localhost:5173", "https://admin.socket.io", "https://potential-goggles-gr5xxqg6qgpcwp54-5173.app.github.dev"],
+      origin: ["http://localhost:5173", "https://admin.socket.io", "https://f0f9-109-18-183-6.ngrok-free.app", "https://potential-goggles-gr5xxqg6qgpcwp54-5173.app.github.dev"],
       credentials: true,
     },
   });
@@ -15,7 +15,6 @@ export async function initializeSocket(app) {
   });
 
   io.on("connection", (socket) => {
-    //console.log("Client connected", socket.id);
     socket.on("join-room", (roomKey) => {
       console.log("join-room", roomKey, socket.id);
     });
@@ -30,8 +29,13 @@ export async function initializeSocket(app) {
         message: res.message,
         messageSentAt: new Date().toLocaleTimeString(),
       };
-      console.log("game-chat", message);
       io.to(res.roomKey).emit("game-chat", message);
+    });
+
+    socket.on("game-start", (res) => {
+      const questions = getQuestionAndAnswers(res.quizId)
+      console.log("game-start", questions);
+      io.to(res.quizId).emit("game-start", questions);
     });
   });
 }
@@ -83,6 +87,8 @@ export function leaveRoom(user, roomKey) {
   io.to(roomKey).emit("user-leave", message);
   return true;
 }
+
+
 export function disconnectSocket(socketID) {
   if (!socketID) return;
 
