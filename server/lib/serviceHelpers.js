@@ -1,6 +1,6 @@
 import db from "./database.js";
 import * as schema from "./schema/realtime.js";
-
+import { eq } from "drizzle-orm";
 export async function getQuizzes() {
     try {
         const quizz = await db
@@ -20,26 +20,30 @@ export async function getQuizzes() {
 
 export async function getQuestionAndAnswers(quizId) {
     try {
-        const question = await db
+        const questions_db = await db
             .select()
             .from(schema.questions)
-            .where(eq(schema.questions.quizId, quizId))
-            .get();
+            .where(eq(schema.questions.id, quizId))
+            .all();
 
-        for (const q of question) {
+        console.log({ questions_db });
+
+
+        for (const q of questions_db) {
             const answers = await db
                 .select()
                 .from(schema.answers)
                 .where(eq(schema.answers.questionId, q.id))
-                .get();
+                .all();
             q.answers = answers;
         }
-        if (!question) {
+        if (!questions_db) {
             return [];
         } else {
-            return question;
+            return questions_db;
         }
     } catch (error) {
+        console.log(error);
         return [];
     }
 }

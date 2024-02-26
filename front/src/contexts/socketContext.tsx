@@ -27,6 +27,25 @@ export type Message = {
   messageSentAt: string;
 };
 
+type Answer = {
+  id: number;
+  questionId: number;
+  answer: string;
+  isCorrect: number; // Assuming 1 represents true (correct) and 0 represents false (incorrect)
+  createdAt: string; // You might want to change this to a Date type if you're handling dates
+  updatedAt: string; // You might want to change this to a Date type if you're handling dates
+};
+
+type Question = {
+  id: number;
+  quizId: number;
+  timer: number;
+  question: string;
+  createdAt: string; // You might want to change this to a Date type if you're handling dates
+  updatedAt: string; // You might want to change this to a Date type if you're handling dates
+  answers: Answer[];
+};
+
 export const SocketContext = createContext<{
   user: UserData | null;
   loading: boolean;
@@ -34,6 +53,7 @@ export const SocketContext = createContext<{
   sendMessage: any;
   setchatMessages: any;
   startGame: (quizId: string) => void;
+  quizzContent: Question | null;
 }>({
   user: null,
   loading: true,
@@ -41,6 +61,7 @@ export const SocketContext = createContext<{
   sendMessage: null,
   setchatMessages: null,
   startGame: () => {},
+  quizzContent: null,
 });
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
@@ -48,6 +69,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [chatMessages, setchatMessages] = useState<Message[]>([]);
+  const [quizzContent, setQuizContent] = useState<Question>(null);
 
   useEffect(() => {
     const TryConnect = () => {
@@ -99,7 +121,8 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       });
 
       socket.on('game-start', res => {
-        console.log('Game is starting now.');
+        console.log('Game is starting now.', res);
+        setQuizContent(res);
       });
     };
 
@@ -130,7 +153,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 
   const startGame = (quizId: string) => {
     if (socket) {
-      socket.emit('game-start', quizId);
+      socket.emit('game-start', { quizId });
     }
   };
 
@@ -149,6 +172,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
         chatMessages,
         setchatMessages,
         startGame,
+        quizzContent,
       }}
     >
       {children}

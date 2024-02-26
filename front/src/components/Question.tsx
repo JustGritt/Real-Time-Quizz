@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import AnswerRow from './AnswerRow';
 import axios from 'axios';
 import NewQuestion from './NewQuestion';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
@@ -11,6 +12,8 @@ export default function Question() {
     if (questionCount > 10 || questionCount === 0) return;
     setQuestionCount(questionCount);
   };
+
+  const navigate = useNavigate();
 
   const handleSubmitQuiz = async (event: FormEvent) => {
     event.preventDefault();
@@ -41,8 +44,9 @@ export default function Question() {
       questions: data,
       user: user,
     });
-
-    console.log(response);
+    if (response.data) {
+      navigate('/dashboard/quizz');
+    }
   };
 
   return (

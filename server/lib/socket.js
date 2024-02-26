@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
-import { getQuestionAndAnswers } from "./servicehelpers.js";
+import { gameStartQuiz } from "./socketService.js";
 let io;
 
 export async function initializeSocket(app) {
@@ -10,6 +10,7 @@ export async function initializeSocket(app) {
       credentials: true,
     },
   });
+
   instrument(io, {
     auth: false,
   });
@@ -32,11 +33,7 @@ export async function initializeSocket(app) {
       io.to(res.roomKey).emit("game-chat", message);
     });
 
-    socket.on("game-start", (res) => {
-      const questions = getQuestionAndAnswers(res.quizId)
-      console.log("game-start", questions);
-      io.to(res.quizId).emit("game-start", questions);
-    });
+    socket.on("game-start", (res) => gameStartQuiz(res, io, socket));
   });
 }
 

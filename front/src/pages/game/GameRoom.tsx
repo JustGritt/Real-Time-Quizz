@@ -5,12 +5,10 @@ import { SessionContext } from '../../contexts/sessionContext';
 import { SocketContext } from '../../contexts/socketContext';
 import Chat from '../../components/Chat';
 export default function GameRoom() {
-  const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
-
   const navigate = useNavigate();
   const { roomKey, quizId } = useParams();
   const { JoinSession } = useContext(SessionContext);
-  const { loading, startGame } = useContext(SocketContext);
+  const { loading, startGame, quizzContent } = useContext(SocketContext);
   const myUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
@@ -48,10 +46,7 @@ export default function GameRoom() {
   //   fetchQuiz();
   // }, [roomKey]);
 
-  const quizzContent = {
-    question: 'What is the capital of France?',
-    answers: ['Paris', 'London', 'Berlin', 'Madrid'],
-  };
+  console.log(quizzContent);
 
   return (
     <div className="mx-auto max-w-2xl py-32 sm:py-48 bg-white">
@@ -60,19 +55,21 @@ export default function GameRoom() {
       ) : (
         <>
           <div className="text-center mb-8">
-            <h2 className="text-6xl font-bold mb-4">{quizzContent.question}</h2>
+            <h2 className="text-6xl font-bold mb-4">
+              {quizzContent?.question}
+            </h2>
             <ul className="w-full grid grid-cols-2 gap-6 mt-16">
-              {quizzContent.answers.map((answer, index) => {
+              {quizzContent?.answers.map((val, index) => {
                 return (
                   // I want each button to have a different color
                   <li key={index}>
                     <button
                       className="w-full p-4 bg-gray-100 rounded-lg hover:bg-[#6366f1] hover:text-white focus:outline-none focus:ring-4 focus:ring-[#6366f1]"
                       onClick={() => {
-                        console.log('Answer clicked:', answer);
+                        console.log('Answer clicked:', val);
                       }}
                     >
-                      {answer}
+                      {val.answer}
                     </button>
                   </li>
                 );
@@ -80,7 +77,12 @@ export default function GameRoom() {
             </ul>
           </div>
 
-          <Chat question={quizzContent} />
+          {quizzContent && (
+            <Chat
+              question={quizzContent.question}
+              answers={quizzContent.answers.map(val => val.answer)}
+            />
+          )}
         </>
       )}
     </div>

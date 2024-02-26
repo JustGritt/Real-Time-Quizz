@@ -10,7 +10,7 @@ export default function Game() {
   const { roomKey } = useParams();
   const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession } =
     useContext(SessionContext);
-  const { user, loading, setchatMessages } = useContext(SocketContext);
+  const { loading, setchatMessages } = useContext(SocketContext);
   const myUser = JSON.parse(localStorage.getItem('user') || '{}');
   const hasJoinedRef = useRef(false);
 
@@ -62,7 +62,7 @@ export default function Game() {
                   <>
                     <button
                       className="mt-6 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
-                      onClick={() => navigate(`/game/${roomKey}/play/${}`)}
+                      onClick={() => navigate(`/game/${roomKey}/play/1`)}
                     >
                       Start Game
                     </button>
