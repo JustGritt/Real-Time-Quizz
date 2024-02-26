@@ -27,7 +27,7 @@ export default function Quiz() {
     navigate('/dashboard/questions');
   };
   return (
-    <div className='flex flex-col justify-center items-center pb-12'>
+    <div className='flex flex-col justify-center items-center md:mb-0 mb-[10rem]'>
       <section className='w-full flex flex-wrap flex-1 justify-center items-center gap-11 my-8'>
         {
           quizzes?.map((quiz: QuizType) => (
