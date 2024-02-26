@@ -58,41 +58,39 @@ export const createQuizz = async (req, res) => {
 };
 
 
-export async function getQuizzes()
-{
-    try {
-    const quizz = await db
+export const getQuizzes = async (req, res) => {
+  try {
+    const quizzes = await db
       .select()
       .from(schema.quizzes)
-      .get();
-    if (!quizz) {
-      return sendResponse(res, 404, "Not Found: Quiz not found.");
-    } else {
-      return quizz;
+
+    if (!quizzes) {
+      return sendResponse(res, 404, "Not Found: No quizzes found.");
     }
 
+    res.status(200).json(quizzes);
+  } catch (error) {
+    sendResponse(res, 400, "Bad Request: Unable to retrieve any quizzes.");
+  }
+}
+
+export async function getQuizById(req, res) {
+  try {
+    const quiz = await db
+      .select()
+      .from(schema.quizzes)
+      .where(eq(schema.quizzes.id, req.params.id))
+      .get();
+    if (!quiz) {
+      console.log("Quiz not found.")
+      return sendResponse(res, 404, "Not Found: Quiz not found.");
+    } else {
+      console.log("Quiz found.", quiz)
+      return sendResponse(res, 200, "Quiz retrieved successfully.");
+    }
   } catch (error) {
     sendResponse(res, 400, "Bad Request: Unable to retrieve the quiz.");
   }
-}
-  
-export async function getQuizById(req, res) {
-    try {
-        const quiz = await db
-            .select()
-            .from(schema.quizzes)
-            .where(eq(schema.quizzes.id, req.params.id))
-            .get();
-        if (!quiz) {
-            console.log("Quiz not found.")
-            return sendResponse(res, 404, "Not Found: Quiz not found.");
-        } else {
-            console.log("Quiz found.", quiz)
-            return sendResponse(res, 200, "Quiz retrieved successfully.");
-        }
-    } catch (error) {
-        sendResponse(res, 400, "Bad Request: Unable to retrieve the quiz.");
-    }
 }
 
 export const createQuiz = async (req, res) => {
