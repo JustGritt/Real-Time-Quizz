@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useState, ReactNode } from 'react';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import type { UserData } from './socketContext';
@@ -9,13 +10,22 @@ interface Session {
   // Add other session properties as needed
 }
 
+export type QuizType = {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 interface SessionContextProps {
   activeSession?: Session;
   activeSessionUsers: any[]; // Replace any with the actual type
   activeSessionHosted: boolean;
   hostedSessions?: any[]; // Replace any with the actual type
   connectedSessions?: any[]; // Replace any with the actual type
-  CreateSession: (title: string) => void;
+  quizzes?: QuizType[];
+  CreateSession: (title: string, quizId: string) => void;
   DeleteSession: (sessionID: string) => void;
   JoinSession: (roomKey: string) => void;
   JoinGame: (quizId: string) => void;
@@ -40,13 +50,14 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   const [connectedSessions, setConnectedSessions] = useState<
     any[] | undefined
   >(); // Replace any with the actual type
+  const [quizzes, setQuizzes] = useState<QuizType[] | undefined>();
 
   const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const navigate = useNavigate();
 
-  async function CreateSession(title: string) {
+  async function CreateSession(title: string, quizId: string) {
     try {
       axios.defaults.headers.common['Authorization'] =
         `Bearer ${user.accessToken}`;
@@ -66,7 +77,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         console.log('Successfully created a new game.');
         toast.success('You have created a new game successfully!');
         setTimeout(() => {
-          navigate(`/game/${response.data.session.roomKey}`);
+          navigate(`/game/${response.data.session.roomKey}?quizId=${quizId}`);
         }, 300);
       }
     } catch (error) {
@@ -197,19 +208,25 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   }
 
   function getQuizzes(): void {
-    axios.defaults.headers.common['Authorization'] =
-      `Bearer ${user.accessToken}`;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`
     axios
       .get(`${API_URL}/quizzes`)
       .then(res => {
-        if (res.data.success === true) {
-          console.log(`${res.data.message}`);
+        if (res.data && Array.isArray(res.data)) {
+          setQuizzes(res.data)
+        } else if (res.data.quizzes && Array.isArray(res.data.quizzes)) {
+          setQuizzes(res.data.quizzes)
+        } else {
+          console.log('No quizzes found or response format is unexpected')
+          setQuizzes([])
         }
       })
       .catch(error => {
-        console.log(`Error getting quizzes :: ${error}`);
-      });
+        console.log(`Error getting quizzes :: ${error}`)
+        setQuizzes([])
+      })
   }
+
 
   return (
     <SessionContext.Provider
@@ -219,6 +236,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
         activeSessionHosted,
         hostedSessions,
         connectedSessions,
+        quizzes,
         setActiveSession,
         CreateSession,
         DeleteSession,

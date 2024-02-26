@@ -8,6 +8,11 @@ import Chat from './Chat';
 export default function Game() {
   const navigate = useNavigate();
   const { roomKey } = useParams();
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const quizId = searchParams.get('quizId');
+
   const { activeSessionUsers, activeSessionHosted, LeaveSession, JoinSession } =
     useContext(SessionContext);
   const { user, loading, setchatMessages } = useContext(SocketContext);
@@ -62,7 +67,7 @@ export default function Game() {
                   <>
                     <button
                       className="mt-6 ml-6 bg-indigo-500 text-white px-4 py-2 rounded-lg"
-                    // onClick={() => navigate(`/game/${roomKey}/play/${}`)}
+                      onClick={() => navigate(`/game/${roomKey}/play/${quizId}`)}
                     >
                       Start Game
                     </button>

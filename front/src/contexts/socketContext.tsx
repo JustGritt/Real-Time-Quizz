@@ -40,7 +40,7 @@ export const SocketContext = createContext<{
   chatMessages: [],
   sendMessage: null,
   setchatMessages: null,
-  startGame: () => {},
+  startGame: () => { },
 });
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
